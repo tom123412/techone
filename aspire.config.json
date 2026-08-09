@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "aspire.payment.AppHost/aspire.payment.AppHost.csproj"
+  }
+}

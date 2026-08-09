@@ -1,0 +1,29 @@
+@aspire.payment.ApiService_HostAddress = https://localhost:7457
+@ApiService_HostAddress = http://localhost:5545
+
+GET {{ApiService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+POST {{aspire.payment.ApiService_HostAddress}}/api/payments
+Content-Type: application/json
+
+{
+  "invoiceDate": "2026-08-07",
+  "ledgerCode": "PA",
+  "accountNumber": "C997905",
+  "gstExclusiveAmount": 20400,
+  "gstAmount": 2040,
+  "gstInclusiveAmount": 22440,
+  "invoiceNarration1": "string",
+  "invoiceNarration2": "string",
+  "invoiceNarration3": "string",
+  "bid": "string",
+  "purchaseLocation": "string",
+  "purchaseOrderNumber": "string",
+  "generalLedgerCode": "string",
+  "registeredForGST": true,
+  "applicationID": "string",
+  "requestedBy": "string"
+}
+###
