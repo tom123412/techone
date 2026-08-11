@@ -1,10 +1,13 @@
 using Asp.Versioning;
 using aspire.payment.ApiService.Features.Payments.Create;
+using aspire.payment.ApiService.Features.SupplierForms.Create;
+using aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+builder.AddAzureCosmosClient("cosmosdb");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -52,7 +55,11 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast")
 ;
 
-app.MapCreatePaymentEndpoint();
+app
+    .MapCreatePaymentEndpoint()
+    .MapCreateSupplierFormEndpoint()
+    .MapCreatePurchaseOrderItemEndpoint()
+    ;
 
 app.MapDefaultEndpoints();
 
