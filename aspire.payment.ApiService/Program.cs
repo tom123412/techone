@@ -1,16 +1,24 @@
 using Asp.Versioning;
 using aspire.payment.ApiService.Features.Payments.Create;
-using aspire.payment.ApiService.Features.SupplierForms.Create;
 using aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
+using aspire.payment.ApiService.Features.SupplierForms.Create;
+using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
-builder.AddAzureCosmosClient("cosmosdb");
+builder.AddAzureCosmosClient("cosmosdb", (settings) => { }, (options) =>
+{
+    options.SerializerOptions = new CosmosSerializationOptions
+    {
+        PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+    };
+});
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddSingleton<ISupplierFormStore, SupplierFormCosmosStore>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

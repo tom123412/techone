@@ -20,7 +20,11 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             supplierFormGroup
-                .MapPost("/", (CreateSupplierFormRequest request) => Results.Created($"/supplierforms/{request.SupplierPartyInformation.LegalName}-{request.ApplicationID}", request))
+                .MapPost("/", async (CreateSupplierFormRequest request, ISupplierFormStore store, CancellationToken cancellationToken) =>
+                {
+                    var document = await store.SaveAsync(request, cancellationToken);
+                    return Results.Created($"/api/supplierforms/{document.Id}", document);
+                })
                 .WithName("CreateSupplierForm")
                 .MapToApiVersion(1, 0)
                 ;

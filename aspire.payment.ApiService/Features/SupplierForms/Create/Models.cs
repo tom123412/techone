@@ -6,3 +6,7 @@ public record PartyInformation(string LegalName, string? Abn, bool IsSmallMedium
 
 public record CreateSupplierFormRequest(string ApplicationID, PartyInformation SupplierPartyInformation, Address SupplierAddress, 
     PaymentInformation PaymentInformation);
+
+
+public record SupplierFormDocument(string Id, string ApplicationId, PartyInformation SupplierPartyInformation, Address SupplierAddress,
+    PaymentInformation PaymentInformation, DateTimeOffset CreatedAtUtc);

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
     <ProjectReference Include="..\aspire.payment.ServiceDefaults\aspire.payment.ServiceDefaults.csproj" />
   </ItemGroup>
@@ -13,5 +13,6 @@
 
 	<PropertyGroup>
 		<EnableSdkContainerSupport>true</EnableSdkContainerSupport>
-	</PropertyGroup>	
+	  <UserSecretsId>8232bb44-3daa-4417-8d7e-3539725d989d</UserSecretsId>
+  </PropertyGroup>	
 </Project>
