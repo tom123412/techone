@@ -23,9 +23,9 @@ internal sealed class SupplierFormCosmosStore(CosmosClient cosmosClient) : ISupp
             DateTimeOffset.UtcNow);
 
         var databaseResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId, cancellationToken: cancellationToken);
-        var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(ContainerId, "/applicationId", cancellationToken: cancellationToken);
+        var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(ContainerId, "/id", cancellationToken: cancellationToken);
 
-        await containerResponse.Container.UpsertItemAsync(document, new PartitionKey(document.ApplicationId), cancellationToken: cancellationToken);
+        await containerResponse.Container.UpsertItemAsync(document, new PartitionKey(document.Id), cancellationToken: cancellationToken);
 
         return document;
     }

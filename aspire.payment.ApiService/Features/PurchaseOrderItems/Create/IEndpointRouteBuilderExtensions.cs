@@ -20,7 +20,11 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             purchaseOrderItemGroup
-                .MapPost("/", (CreatePurchaseOrderItemRequest request) => Results.Created($"/purchaseorderitems/{request.RequisitionNumber}-{request.OtherInformation.Description}", request))
+                .MapPost("/", async (CreatePurchaseOrderItemRequest request, IPurchaseOrderItemStore store, CancellationToken cancellationToken) =>
+                {
+                    var document = await store.SaveAsync(request, cancellationToken);
+                    return Results.Created($"/api/purchaseorderitems/{document.Id}", document);
+                })
                 .WithName("CreatePurchaseOrderItem")
                 .MapToApiVersion(1, 0)
                 ;

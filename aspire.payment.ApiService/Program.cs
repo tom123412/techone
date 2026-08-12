@@ -19,6 +19,7 @@ builder.AddAzureCosmosClient("cosmosdb", (settings) => { }, (options) =>
 // Add services to the container.
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<ISupplierFormStore, SupplierFormCosmosStore>();
+builder.Services.AddSingleton<IPurchaseOrderItemStore, PurchaseOrderItemCosmosStore>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
