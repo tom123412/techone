@@ -1,86 +1,15 @@
-using aspire.payment.ApiService.Features.Payments.Create;
-using aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
-using aspire.payment.ApiService.Features.SupplierForms.Create;
 using Microsoft.EntityFrameworkCore;
 
-namespace aspire.payment.ApiService.Persistence;
+namespace aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
 
-internal sealed class PaymentsCosmosDbContext(DbContextOptions<PaymentsCosmosDbContext> options) : DbContext(options)
+internal sealed class PurchaseOrderItemsCosmosDbContext(DbContextOptions<PurchaseOrderItemsCosmosDbContext> options) : DbContext(options)
 {
     public const string DatabaseId = "payments";
 
-    public DbSet<PaymentDocument> Payments => Set<PaymentDocument>();
-    public DbSet<SupplierFormDocument> SupplierForms => Set<SupplierFormDocument>();
     public DbSet<PurchaseOrderItemDocument> PurchaseOrderItems => Set<PurchaseOrderItemDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<PaymentDocument>(entity =>
-        {
-            entity.ToContainer("payments");
-            entity.HasKey(document => document.Id);
-            entity.HasPartitionKey(document => document.Id);
-
-            entity.Property(document => document.Id).ToJsonProperty("id");
-            entity.Property(document => document.InvoiceDate).ToJsonProperty("invoiceDate");
-            entity.Property(document => document.LedgerCode).ToJsonProperty("ledgerCode");
-            entity.Property(document => document.AccountNumber).ToJsonProperty("accountNumber");
-            entity.Property(document => document.GSTExclusiveAmount).ToJsonProperty("gstExclusiveAmount");
-            entity.Property(document => document.GSTAmount).ToJsonProperty("gstAmount");
-            entity.Property(document => document.GSTInclusiveAmount).ToJsonProperty("gstInclusiveAmount");
-            entity.Property(document => document.InvoiceNarration1).ToJsonProperty("invoiceNarration1");
-            entity.Property(document => document.InvoiceNarration2).ToJsonProperty("invoiceNarration2");
-            entity.Property(document => document.InvoiceNarration3).ToJsonProperty("invoiceNarration3");
-            entity.Property(document => document.BID).ToJsonProperty("bid");
-            entity.Property(document => document.PurchaseLocation).ToJsonProperty("purchaseLocation");
-            entity.Property(document => document.PurchaseOrderNumber).ToJsonProperty("purchaseOrderNumber");
-            entity.Property(document => document.GeneralLedgerCode).ToJsonProperty("generalLedgerCode");
-            entity.Property(document => document.RegisteredForGST).ToJsonProperty("registeredForGST");
-            entity.Property(document => document.ApplicationID).ToJsonProperty("applicationID");
-            entity.Property(document => document.RequestedBy).ToJsonProperty("requestedBy");
-            entity.Property(document => document.CreatedAtUtc).ToJsonProperty("createdAtUtc");
-        });
-
-        modelBuilder.Entity<SupplierFormDocument>(entity =>
-        {
-            entity.ToContainer("supplierforms");
-            entity.HasKey(document => document.Id);
-            entity.HasPartitionKey(document => document.Id);
-
-            entity.Property(document => document.Id).ToJsonProperty("id");
-            entity.Property(document => document.ApplicationId).ToJsonProperty("applicationId");
-            entity.Property(document => document.CreatedAtUtc).ToJsonProperty("createdAtUtc");
-
-            entity.OwnsOne(document => document.SupplierPartyInformation, party =>
-            {
-                party.ToJsonProperty("supplierPartyInformation");
-                party.Property(value => value.LegalName).ToJsonProperty("legalName");
-                party.Property(value => value.Abn).ToJsonProperty("abn");
-                party.Property(value => value.IsSmallMediumEnterprise).ToJsonProperty("isSmallMediumEnterprise");
-                party.Property(value => value.IsIndigenousSupplier).ToJsonProperty("isIndigenousSupplier");
-            });
-
-            entity.OwnsOne(document => document.SupplierAddress, address =>
-            {
-                address.ToJsonProperty("supplierAddress");
-                address.Property(value => value.AddressLine1).ToJsonProperty("addressLine1");
-                address.Property(value => value.AddressLine2).ToJsonProperty("addressLine2");
-                address.Property(value => value.AddressLine3).ToJsonProperty("addressLine3");
-                address.Property(value => value.City).ToJsonProperty("city");
-                address.Property(value => value.State).ToJsonProperty("state");
-                address.Property(value => value.PostCode).ToJsonProperty("postCode");
-            });
-
-            entity.OwnsOne(document => document.PaymentInformation, payment =>
-            {
-                payment.ToJsonProperty("paymentInformation");
-                payment.Property(value => value.Email).ToJsonProperty("email");
-                payment.Property(value => value.AccountName).ToJsonProperty("accountName");
-                payment.Property(value => value.BSB).ToJsonProperty("bsb");
-                payment.Property(value => value.AccountNumber).ToJsonProperty("accountNumber");
-            });
-        });
-
         modelBuilder.Entity<PurchaseOrderItemDocument>(entity =>
         {
             entity.ToContainer("purchaseorderitems");

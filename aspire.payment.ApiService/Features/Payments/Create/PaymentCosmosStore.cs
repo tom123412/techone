@@ -1,5 +1,3 @@
-using aspire.payment.ApiService.Persistence;
-
 namespace aspire.payment.ApiService.Features.Payments.Create;
 
 public interface IPaymentStore

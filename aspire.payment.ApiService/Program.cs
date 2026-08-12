@@ -2,7 +2,6 @@ using Asp.Versioning;
 using aspire.payment.ApiService.Features.Payments.Create;
 using aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
 using aspire.payment.ApiService.Features.SupplierForms.Create;
-using aspire.payment.ApiService.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +16,10 @@ var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb
 builder.Services.AddProblemDetails();
 builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
     options.UseCosmos(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
+builder.Services.AddDbContext<SupplierFormsCosmosDbContext>(options =>
+    options.UseCosmos(cosmosConnectionString, SupplierFormsCosmosDbContext.DatabaseId));
+builder.Services.AddDbContext<PurchaseOrderItemsCosmosDbContext>(options =>
+    options.UseCosmos(cosmosConnectionString, PurchaseOrderItemsCosmosDbContext.DatabaseId));
 builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddScoped<ISupplierFormStore, SupplierFormCosmosStore>();
 builder.Services.AddScoped<IPurchaseOrderItemStore, PurchaseOrderItemCosmosStore>();

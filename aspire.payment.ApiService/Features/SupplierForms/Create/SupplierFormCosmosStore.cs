@@ -1,5 +1,3 @@
-using aspire.payment.ApiService.Persistence;
-
 namespace aspire.payment.ApiService.Features.SupplierForms.Create;
 
 public interface ISupplierFormStore
@@ -7,7 +5,7 @@ public interface ISupplierFormStore
     Task<SupplierFormDocument> SaveAsync(CreateSupplierFormRequest request, CancellationToken cancellationToken);
 }
 
-internal sealed class SupplierFormCosmosStore(PaymentsCosmosDbContext dbContext) : ISupplierFormStore
+internal sealed class SupplierFormCosmosStore(SupplierFormsCosmosDbContext dbContext) : ISupplierFormStore
 {
     public async Task<SupplierFormDocument> SaveAsync(CreateSupplierFormRequest request, CancellationToken cancellationToken)
     {

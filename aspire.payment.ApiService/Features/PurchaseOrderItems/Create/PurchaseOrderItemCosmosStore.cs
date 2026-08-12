@@ -1,5 +1,3 @@
-using aspire.payment.ApiService.Persistence;
-
 namespace aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
 
 public interface IPurchaseOrderItemStore
@@ -7,7 +5,7 @@ public interface IPurchaseOrderItemStore
     Task<PurchaseOrderItemDocument> SaveAsync(CreatePurchaseOrderItemRequest request, CancellationToken cancellationToken);
 }
 
-internal sealed class PurchaseOrderItemCosmosStore(PaymentsCosmosDbContext dbContext) : IPurchaseOrderItemStore
+internal sealed class PurchaseOrderItemCosmosStore(PurchaseOrderItemsCosmosDbContext dbContext) : IPurchaseOrderItemStore
 {
     public async Task<PurchaseOrderItemDocument> SaveAsync(CreatePurchaseOrderItemRequest request, CancellationToken cancellationToken)
     {
