@@ -1,4 +1,4 @@
-using Microsoft.Azure.Cosmos;
+using aspire.payment.ApiService.Persistence;
 
 namespace aspire.payment.ApiService.Features.Payments.Create;
 
@@ -7,37 +7,35 @@ public interface IPaymentStore
     Task<PaymentDocument> SaveAsync(CreatePaymentRequest request, CancellationToken cancellationToken);
 }
 
-internal sealed class PaymentCosmosStore(CosmosClient cosmosClient) : IPaymentStore
+internal sealed class PaymentCosmosStore(PaymentsCosmosDbContext dbContext) : IPaymentStore
 {
-    private const string DatabaseId = "payments";
-    private const string ContainerId = "payments";
-
     public async Task<PaymentDocument> SaveAsync(CreatePaymentRequest request, CancellationToken cancellationToken)
     {
-        var document = new PaymentDocument(
-            Guid.NewGuid().ToString("N"),
-            request.InvoiceDate,
-            request.LedgerCode,
-            request.AccountNumber,
-            request.GSTExclusiveAmount,
-            request.GSTAmount,
-            request.GSTInclusiveAmount,
-            request.InvoiceNarration1,
-            request.InvoiceNarration2,
-            request.InvoiceNarration3,
-            request.BID,
-            request.PurchaseLocation,
-            request.PurchaseOrderNumber,
-            request.GeneralLedgerCode,
-            request.RegisteredForGST,
-            request.ApplicationID,
-            request.RequestedBy,
-            DateTimeOffset.UtcNow);
+        var document = new PaymentDocument
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            InvoiceDate = request.InvoiceDate,
+            LedgerCode = request.LedgerCode,
+            AccountNumber = request.AccountNumber,
+            GSTExclusiveAmount = request.GSTExclusiveAmount,
+            GSTAmount = request.GSTAmount,
+            GSTInclusiveAmount = request.GSTInclusiveAmount,
+            InvoiceNarration1 = request.InvoiceNarration1,
+            InvoiceNarration2 = request.InvoiceNarration2,
+            InvoiceNarration3 = request.InvoiceNarration3,
+            BID = request.BID,
+            PurchaseLocation = request.PurchaseLocation,
+            PurchaseOrderNumber = request.PurchaseOrderNumber,
+            GeneralLedgerCode = request.GeneralLedgerCode,
+            RegisteredForGST = request.RegisteredForGST,
+            ApplicationID = request.ApplicationID,
+            RequestedBy = request.RequestedBy,
+            CreatedAtUtc = DateTimeOffset.UtcNow
+        };
 
-        var databaseResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId, cancellationToken: cancellationToken);
-        var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(ContainerId, "/id", cancellationToken: cancellationToken);
-
-        await containerResponse.Container.UpsertItemAsync(document, new PartitionKey(document.Id), cancellationToken: cancellationToken);
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        dbContext.Payments.Add(document);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return document;
     }

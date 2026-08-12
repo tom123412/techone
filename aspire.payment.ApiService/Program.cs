@@ -2,25 +2,24 @@ using Asp.Versioning;
 using aspire.payment.ApiService.Features.Payments.Create;
 using aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
 using aspire.payment.ApiService.Features.SupplierForms.Create;
-using Microsoft.Azure.Cosmos;
+using aspire.payment.ApiService.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults & Aspire client integrations.
+// Add service defaults & Aspire integrations.
 builder.AddServiceDefaults();
-builder.AddAzureCosmosClient("cosmosdb", (settings) => { }, (options) =>
-{
-    options.SerializerOptions = new CosmosSerializationOptions
-    {
-        PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-    };
-});
+
+var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
+    ?? throw new InvalidOperationException("Connection string 'cosmosdb' was not configured.");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
-builder.Services.AddSingleton<IPaymentStore, PaymentCosmosStore>();
-builder.Services.AddSingleton<ISupplierFormStore, SupplierFormCosmosStore>();
-builder.Services.AddSingleton<IPurchaseOrderItemStore, PurchaseOrderItemCosmosStore>();
+builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
+    options.UseCosmos(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
+builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
+builder.Services.AddScoped<ISupplierFormStore, SupplierFormCosmosStore>();
+builder.Services.AddScoped<IPurchaseOrderItemStore, PurchaseOrderItemCosmosStore>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

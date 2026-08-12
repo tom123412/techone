@@ -8,5 +8,12 @@ public record CreateSupplierFormRequest(string ApplicationID, PartyInformation S
     PaymentInformation PaymentInformation);
 
 
-public record SupplierFormDocument(string Id, string ApplicationId, PartyInformation SupplierPartyInformation, Address SupplierAddress,
-    PaymentInformation PaymentInformation, DateTimeOffset CreatedAtUtc);
+public class SupplierFormDocument
+{
+    public required string Id { get; set; }
+    public required string ApplicationId { get; set; }
+    public required PartyInformation SupplierPartyInformation { get; set; }
+    public required Address SupplierAddress { get; set; }
+    public required PaymentInformation PaymentInformation { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+}

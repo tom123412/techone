@@ -10,6 +10,17 @@ public record OtherInformation(string GOId, string SupplierLedgerCode, string Su
 public record CreatePurchaseOrderItemRequest(string PurchasingLocation, string SublocationCode, string RequisitionNumber, string ProcessingGroupName,
     string? OrderNumber, string Reference, string RequisitionComment, UserFields UserFields, OtherInformation OtherInformation);
 
-public record PurchaseOrderItemDocument(string Id, string PurchasingLocation, string SublocationCode, string RequisitionNumber,
-    string ProcessingGroupName, string? OrderNumber, string Reference, string RequisitionComment, UserFields UserFields,
-    OtherInformation OtherInformation, DateTimeOffset CreatedAtUtc);
+public class PurchaseOrderItemDocument
+{
+    public required string Id { get; set; }
+    public required string PurchasingLocation { get; set; }
+    public required string SublocationCode { get; set; }
+    public required string RequisitionNumber { get; set; }
+    public required string ProcessingGroupName { get; set; }
+    public string? OrderNumber { get; set; }
+    public required string Reference { get; set; }
+    public required string RequisitionComment { get; set; }
+    public required UserFields UserFields { get; set; }
+    public required OtherInformation OtherInformation { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+}

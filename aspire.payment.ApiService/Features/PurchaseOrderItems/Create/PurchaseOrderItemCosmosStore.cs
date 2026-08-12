@@ -1,4 +1,4 @@
-using Microsoft.Azure.Cosmos;
+using aspire.payment.ApiService.Persistence;
 
 namespace aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
 
@@ -7,30 +7,28 @@ public interface IPurchaseOrderItemStore
     Task<PurchaseOrderItemDocument> SaveAsync(CreatePurchaseOrderItemRequest request, CancellationToken cancellationToken);
 }
 
-internal sealed class PurchaseOrderItemCosmosStore(CosmosClient cosmosClient) : IPurchaseOrderItemStore
+internal sealed class PurchaseOrderItemCosmosStore(PaymentsCosmosDbContext dbContext) : IPurchaseOrderItemStore
 {
-    private const string DatabaseId = "payments";
-    private const string ContainerId = "purchaseorderitems";
-
     public async Task<PurchaseOrderItemDocument> SaveAsync(CreatePurchaseOrderItemRequest request, CancellationToken cancellationToken)
     {
-        var document = new PurchaseOrderItemDocument(
-            Guid.NewGuid().ToString("N"),
-            request.PurchasingLocation,
-            request.SublocationCode,
-            request.RequisitionNumber,
-            request.ProcessingGroupName,
-            request.OrderNumber,
-            request.Reference,
-            request.RequisitionComment,
-            request.UserFields,
-            request.OtherInformation,
-            DateTimeOffset.UtcNow);
+        var document = new PurchaseOrderItemDocument
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            PurchasingLocation = request.PurchasingLocation,
+            SublocationCode = request.SublocationCode,
+            RequisitionNumber = request.RequisitionNumber,
+            ProcessingGroupName = request.ProcessingGroupName,
+            OrderNumber = request.OrderNumber,
+            Reference = request.Reference,
+            RequisitionComment = request.RequisitionComment,
+            UserFields = request.UserFields,
+            OtherInformation = request.OtherInformation,
+            CreatedAtUtc = DateTimeOffset.UtcNow
+        };
 
-        var databaseResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(DatabaseId, cancellationToken: cancellationToken);
-        var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(ContainerId, "/id", cancellationToken: cancellationToken);
-
-        await containerResponse.Container.UpsertItemAsync(document, new PartitionKey(document.Id), cancellationToken: cancellationToken);
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        dbContext.PurchaseOrderItems.Add(document);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return document;
     }
