@@ -18,6 +18,7 @@ builder.AddAzureCosmosClient("cosmosdb", (settings) => { }, (options) =>
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddSingleton<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddSingleton<ISupplierFormStore, SupplierFormCosmosStore>();
 builder.Services.AddSingleton<IPurchaseOrderItemStore, PurchaseOrderItemCosmosStore>();
 

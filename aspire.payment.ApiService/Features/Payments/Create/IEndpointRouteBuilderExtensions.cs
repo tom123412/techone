@@ -20,7 +20,11 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             paymentsGroup
-                .MapPost("/", (CreatePaymentRequest request) => Results.Created($"/payments/{request.InvoiceDate:yyyyMMdd}-{request.BID}", request))
+                .MapPost("/", async (CreatePaymentRequest request, IPaymentStore store, CancellationToken cancellationToken) =>
+                {
+                    var document = await store.SaveAsync(request, cancellationToken);
+                    return Results.Created($"/api/payments/{document.Id}", document);
+                })
                 .WithName("CreatePayment")
                 .MapToApiVersion(1, 0)
                 ;
