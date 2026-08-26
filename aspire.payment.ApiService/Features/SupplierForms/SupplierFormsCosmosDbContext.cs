@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace aspire.payment.ApiService.Features.SupplierForms.Create;
+namespace aspire.payment.ApiService.Features.SupplierForms;
 
 internal sealed class SupplierFormsCosmosDbContext(DbContextOptions<SupplierFormsCosmosDbContext> options) : DbContext(options)
 {

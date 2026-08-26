@@ -1,8 +1,9 @@
-namespace aspire.payment.ApiService.Features.SupplierForms.Create;
+namespace aspire.payment.ApiService.Features.SupplierForms;
 
 public interface ISupplierFormStore
 {
     Task<SupplierFormDocument> SaveAsync(CreateSupplierFormRequest request, CancellationToken cancellationToken);
+    Task<SupplierFormDocument?> GetAsync(string id, CancellationToken cancellationToken);
 }
 
 internal sealed class SupplierFormCosmosStore(SupplierFormsCosmosDbContext dbContext) : ISupplierFormStore
@@ -24,5 +25,11 @@ internal sealed class SupplierFormCosmosStore(SupplierFormsCosmosDbContext dbCon
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return document;
+    }
+
+    public async Task<SupplierFormDocument?> GetAsync(string id, CancellationToken cancellationToken)
+    {
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+        return await dbContext.SupplierForms.FindAsync([id], cancellationToken);
     }
 }

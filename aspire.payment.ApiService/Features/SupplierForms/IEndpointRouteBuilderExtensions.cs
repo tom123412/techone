@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
 
-namespace aspire.payment.ApiService.Features.SupplierForms.Create;
+namespace aspire.payment.ApiService.Features.SupplierForms;
 
 public static class IEndpointRouteBuilderExtensions
 {
@@ -26,6 +26,16 @@ public static class IEndpointRouteBuilderExtensions
                     return Results.Created($"/api/supplierforms/{document.Id}", document);
                 })
                 .WithName("CreateSupplierForm")
+                .MapToApiVersion(1, 0)
+                ;
+
+            supplierFormGroup
+                .MapGet("/{id}", async (string id, ISupplierFormStore store, CancellationToken cancellationToken) =>
+                {
+                    var document = await store.GetAsync(id, cancellationToken);
+                    return document is null ? Results.NotFound() : Results.Ok(document);
+                })
+                .WithName("GetSupplierForm")
                 .MapToApiVersion(1, 0)
                 ;
 

@@ -1,4 +1,4 @@
-﻿namespace aspire.payment.ApiService.Features.SupplierForms.Create;
+﻿namespace aspire.payment.ApiService.Features.SupplierForms;
 
 public record PaymentInformation(string Email, string AccountName, string BSB, string AccountNumber);
 public record Address(string AddressLine1, string? AddressLine2, string? AddressLine3, string City, string State, string PostCode);
