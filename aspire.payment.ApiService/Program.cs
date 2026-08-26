@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using aspire.payment.ApiService.Features.Payments.Create;
-using aspire.payment.ApiService.Features.PurchaseOrderItems.Create;
+using aspire.payment.ApiService.Features.PurchaseOrderLineItems.Create;
 using aspire.payment.ApiService.Features.Vendors;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,11 +18,11 @@ builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
     options.UseCosmos(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
 builder.Services.AddDbContext<VendorsCosmosDbContext>(options =>
     options.UseCosmos(cosmosConnectionString, VendorsCosmosDbContext.DatabaseId));
-builder.Services.AddDbContext<PurchaseOrderItemsCosmosDbContext>(options =>
-    options.UseCosmos(cosmosConnectionString, PurchaseOrderItemsCosmosDbContext.DatabaseId));
+builder.Services.AddDbContext<PurchaseOrderLineItemsCosmosDbContext>(options =>
+    options.UseCosmos(cosmosConnectionString, PurchaseOrderLineItemsCosmosDbContext.DatabaseId));
 builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddScoped<IVendorStore, VendorCosmosStore>();
-builder.Services.AddScoped<IPurchaseOrderItemStore, PurchaseOrderItemCosmosStore>();
+builder.Services.AddScoped<IPurchaseOrderLineItemStore, PurchaseOrderLineItemCosmosStore>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -70,7 +70,7 @@ app.MapGet("/weatherforecast", () =>
 app
     .MapCreatePaymentEndpoint()
     .MapVendorEndpoints()
-    .MapCreatePurchaseOrderItemEndpoint()
+    .MapCreatePurchaseOrderLineItemEndpoint()
     ;
 
 app.MapDefaultEndpoints();
