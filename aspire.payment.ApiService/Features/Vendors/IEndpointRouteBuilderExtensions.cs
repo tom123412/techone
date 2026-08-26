@@ -1,12 +1,12 @@
 ﻿using Asp.Versioning;
 
-namespace aspire.payment.ApiService.Features.SupplierForms;
+namespace aspire.payment.ApiService.Features.Vendors;
 
 public static class IEndpointRouteBuilderExtensions
 {
     extension(IEndpointRouteBuilder app)
     {
-        public IEndpointRouteBuilder MapCreateSupplierFormEndpoint()
+        public IEndpointRouteBuilder MapVendorEndpoints()
         {
             var apiVersionSet = app.NewApiVersionSet()
                 .HasApiVersion(new ApiVersion(1, 0))
@@ -14,28 +14,28 @@ public static class IEndpointRouteBuilderExtensions
                 .Build()
                 ;
 
-            var supplierFormGroup = app
-                .MapGroup("/api/supplierforms")
+            var vendorGroup = app
+                .MapGroup("/api/vendors")
                 .WithApiVersionSet(apiVersionSet)
                 ;
 
-            supplierFormGroup
-                .MapPost("/", async (CreateSupplierFormRequest request, ISupplierFormStore store, CancellationToken cancellationToken) =>
+            vendorGroup
+                .MapPost("/", async (CreateVendorRequest request, IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var document = await store.SaveAsync(request, cancellationToken);
-                    return Results.Created($"/api/supplierforms/{document.Id}", document);
+                    return Results.Created($"/api/vendors/{document.Id}", document);
                 })
-                .WithName("CreateSupplierForm")
+                .WithName("CreateVendor")
                 .MapToApiVersion(1, 0)
                 ;
 
-            supplierFormGroup
-                .MapGet("/{id}", async (string id, ISupplierFormStore store, CancellationToken cancellationToken) =>
+            vendorGroup
+                .MapGet("/{id}", async (string id, IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var document = await store.GetAsync(id, cancellationToken);
                     return document is null ? Results.NotFound() : Results.Ok(document);
                 })
-                .WithName("GetSupplierForm")
+                .WithName("GetVendor")
                 .MapToApiVersion(1, 0)
                 ;
 
