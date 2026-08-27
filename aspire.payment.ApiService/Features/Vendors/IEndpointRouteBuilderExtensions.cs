@@ -30,6 +30,16 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             vendorGroup
+                .MapGet("/", async (IVendorStore store, CancellationToken cancellationToken) =>
+                {
+                    var documents = await store.GetAllAsync(cancellationToken);
+                    return Results.Ok(documents);
+                })
+                .WithName("GetVendors")
+                .MapToApiVersion(1, 0)
+                ;
+
+            vendorGroup
                 .MapGet("/{id}", async (string id, IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var document = await store.GetAsync(id, cancellationToken);

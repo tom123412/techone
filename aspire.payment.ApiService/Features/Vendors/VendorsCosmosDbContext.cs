@@ -20,7 +20,7 @@ internal sealed class VendorsCosmosDbContext(DbContextOptions<VendorsCosmosDbCon
             entity.Property(document => document.ApplicationId).ToJsonProperty("applicationId");
             entity.Property(document => document.CreatedAtUtc).ToJsonProperty("createdAtUtc");
 
-            entity.OwnsOne(document => document.VendorPartyInformation, party =>
+            entity.OwnsOne(document => document.VendorInformation, party =>
             {
                 party.ToJsonProperty("vendorPartyInformation");
                 party.Property(value => value.LegalName).ToJsonProperty("legalName");
@@ -43,10 +43,15 @@ internal sealed class VendorsCosmosDbContext(DbContextOptions<VendorsCosmosDbCon
             entity.OwnsOne(document => document.PaymentInformation, payment =>
             {
                 payment.ToJsonProperty("paymentInformation");
-                payment.Property(value => value.Email).ToJsonProperty("email");
                 payment.Property(value => value.AccountName).ToJsonProperty("accountName");
                 payment.Property(value => value.BSB).ToJsonProperty("bsb");
                 payment.Property(value => value.AccountNumber).ToJsonProperty("accountNumber");
+            });
+
+            entity.OwnsOne(document => document.ContactInformation, contact =>
+            {
+                contact.ToJsonProperty("contactInformation");
+                contact.Property(value => value.Email).ToJsonProperty("email");
             });
         });
     }
