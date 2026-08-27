@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Query;
 
@@ -22,23 +23,22 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             vendorGroup
-                .MapPost("/", async (CreateVendorRequest request, IVendorStore store, CancellationToken cancellationToken) =>
+                .MapPost("/", async Task<Created<VendorDocument>> (CreateVendorRequest request, IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var document = await store.SaveAsync(request, cancellationToken);
-                    return Results.Created($"/api/vendors/{document.Id}", document);
+                    return TypedResults.Created($"/api/vendors/{document.Id}", document);
                 })
                 .WithName("CreateVendor")
                 .MapToApiVersion(1, 0)
                 ;
 
             vendorGroup
-                .MapGet("/", async (ODataQueryOptions<VendorDocument> queryOptions, IVendorStore store, CancellationToken cancellationToken) =>
+                .MapGet("/", async (IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var vendors = await store.QueryAsync(cancellationToken);
-                    var results = queryOptions.ApplyTo(vendors);
-                    return Results.Ok(results);
+                    return vendors;
                 })
-                //.AddODataQueryEndpointFilter() // Automatically applies query options over IQueryable
+                .AddODataQueryEndpointFilter() // Automatically applies query options over IQueryable
                 .WithODataModel(VendorEdmModelConfiguration.GetEdmModel()) // Generates accurate @odata.context metadata
                 .WithODataResult()            // Properly serializes the response as OData JSON
                 .WithName("GetVendors")
@@ -46,10 +46,10 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             vendorGroup
-                .MapGet("/{id}", async (string id, IVendorStore store, CancellationToken cancellationToken) =>
+                .MapGet("/{id}", async Task<Results<Ok<VendorDocument>, NotFound>> (string id, IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var document = await store.GetAsync(id, cancellationToken);
-                    return document is null ? Results.NotFound() : Results.Ok(document);
+                    return document is null ? TypedResults.NotFound() : TypedResults.Ok(document);
                 })
                 .WithName("GetVendor")
                 .MapToApiVersion(1, 0)
