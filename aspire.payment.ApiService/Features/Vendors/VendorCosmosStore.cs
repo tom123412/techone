@@ -5,7 +5,7 @@ namespace aspire.payment.ApiService.Features.Vendors;
 public interface IVendorStore
 {
     Task<VendorDocument> SaveAsync(CreateVendorRequest request, CancellationToken cancellationToken);
-    Task<IReadOnlyList<VendorDocument>> GetAllAsync(CancellationToken cancellationToken);
+    Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken);
     Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken);
 }
 
@@ -33,10 +33,10 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         return document;
     }
 
-    public async Task<IReadOnlyList<VendorDocument>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-        return await dbContext.Vendors.ToListAsync(cancellationToken);
+        return dbContext.Vendors.AsQueryable();
     }
 
     public async Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken)

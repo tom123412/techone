@@ -1,4 +1,6 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace aspire.payment.ApiService.Features.Vendors;
 
@@ -30,11 +32,15 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             vendorGroup
-                .MapGet("/", async (IVendorStore store, CancellationToken cancellationToken) =>
+                .MapGet("/", async (ODataQueryOptions<VendorDocument> queryOptions, IVendorStore store, CancellationToken cancellationToken) =>
                 {
-                    var documents = await store.GetAllAsync(cancellationToken);
-                    return Results.Ok(documents);
+                    var vendors = await store.QueryAsync(cancellationToken);
+                    var results = queryOptions.ApplyTo(vendors);
+                    return Results.Ok(results);
                 })
+                //.AddODataQueryEndpointFilter() // Automatically applies query options over IQueryable
+                .WithODataModel(VendorEdmModelConfiguration.GetEdmModel()) // Generates accurate @odata.context metadata
+                .WithODataResult()            // Properly serializes the response as OData JSON
                 .WithName("GetVendors")
                 .MapToApiVersion(1, 0)
                 ;
