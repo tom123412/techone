@@ -26,14 +26,7 @@ builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddScoped<IVendorStore, VendorCosmosStore>();
 builder.Services.AddScoped<IPurchaseOrderLineItemStore, PurchaseOrderLineItemCosmosStore>();
 
-//builder.Services.AddControllers().AddOData(options =>
-//    options
-//        .Select()
-//        .Filter()
-//        .OrderBy()
-//        .Count()
-//        .SetMaxTop(null)
-//        .AddRouteComponents("api", VendorEdmModelConfiguration.GetEdmModel()));
+builder.Services.AddOData(options => options.EnableAll());
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
