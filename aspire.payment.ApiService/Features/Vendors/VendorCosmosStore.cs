@@ -57,8 +57,8 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         }
 
         var (applicationId, requestVendorInformation, requestVendorAddress, requestContactInformation, requestPaymentInformation) = request;
-        var (legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier) =
-            requestVendorInformation ?? new PatchVendorInformation(null, null, null, null, null);
+        var (vendorInformationId, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier) =
+            requestVendorInformation ?? new PatchVendorInformation(null, null, null, null, null, null);
         var (addressLine1, addressLine2, addressLine3, city, state, postCode) =
             requestVendorAddress ?? new PatchAddress(null, null, null, null, null, null);
         var contactInformation = requestContactInformation ?? new PatchContactInformation(null);
@@ -68,7 +68,7 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
 
         document.ApplicationId = applicationId ?? document.ApplicationId;
         document.VendorInformation = new VendorInformation(
-            document.VendorInformation.Id,
+            vendorInformationId ?? document.VendorInformation.Id,
             legalName ?? document.VendorInformation.LegalName,
             abn ?? document.VendorInformation.Abn,
             organisationType ?? document.VendorInformation.OrganisationType,
