@@ -25,6 +25,8 @@ builder.AddProject<Projects.aspire_payment_Web>("webfrontend")
     .WaitFor(apiService)
     ;
 
-builder.AddProject<Projects.aspire_payment_TechnologyOne>("technologyone");
+builder.AddProject<Projects.aspire_payment_TechnologyOne>("technologyone")
+    .WithReference(apiService)
+    ;
 
 builder.Build().Run();
