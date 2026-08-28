@@ -4,4 +4,5 @@
   <Project Path="aspire.payment.ServiceDefaults/aspire.payment.ServiceDefaults.csproj" />
   <Project Path="aspire.payment.Tests/aspire.payment.Tests.csproj" />
   <Project Path="aspire.payment.Web/aspire.payment.Web.csproj" />
+  <Project Path="TechnologyOne/aspire.payment.TechnologyOne.csproj" />
 </Solution>

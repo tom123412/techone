@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\aspire.payment.ApiService\aspire.payment.ApiService.csproj" />
     <ProjectReference Include="..\aspire.payment.Web\aspire.payment.Web.csproj" />
+    <ProjectReference Include="..\TechnologyOne\aspire.payment.TechnologyOne.csproj" />
   </ItemGroup>
 
 </Project>
