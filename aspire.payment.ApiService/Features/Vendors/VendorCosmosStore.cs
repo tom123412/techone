@@ -7,6 +7,7 @@ public interface IVendorStore
     Task<VendorDocument> SaveAsync(CreateVendorRequest request, CancellationToken cancellationToken);
     Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken);
     Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken);
+    Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken);
 }
 
 internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVendorStore
@@ -43,5 +44,51 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
         return await dbContext.Vendors.FindAsync([id], cancellationToken);
+    }
+
+    public async Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken)
+    {
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+
+        var document = await dbContext.Vendors.FindAsync([id], cancellationToken);
+        if (document is null)
+        {
+            return null;
+        }
+
+        var (applicationId, requestVendorInformation, requestVendorAddress, requestContactInformation, requestPaymentInformation) = request;
+        var (legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier) =
+            requestVendorInformation ?? new PatchVendorInformation(null, null, null, null, null);
+        var (addressLine1, addressLine2, addressLine3, city, state, postCode) =
+            requestVendorAddress ?? new PatchAddress(null, null, null, null, null, null);
+        var contactInformation = requestContactInformation ?? new PatchContactInformation(null);
+        contactInformation.Deconstruct(out var email);
+        var (accountName, bsb, accountNumber) =
+            requestPaymentInformation ?? new PatchPaymentInformation(null, null, null);
+
+        document.ApplicationId = applicationId ?? document.ApplicationId;
+        document.VendorInformation = new VendorInformation(
+            document.VendorInformation.Id,
+            legalName ?? document.VendorInformation.LegalName,
+            abn ?? document.VendorInformation.Abn,
+            organisationType ?? document.VendorInformation.OrganisationType,
+            isSmallMediumEnterprise ?? document.VendorInformation.IsSmallMediumEnterprise,
+            isIndigenousSupplier ?? document.VendorInformation.IsIndigenousSupplier);
+        document.VendorAddress = new Address(
+            addressLine1 ?? document.VendorAddress.AddressLine1,
+            addressLine2 ?? document.VendorAddress.AddressLine2,
+            addressLine3 ?? document.VendorAddress.AddressLine3,
+            city ?? document.VendorAddress.City,
+            state ?? document.VendorAddress.State,
+            postCode ?? document.VendorAddress.PostCode);
+        document.PaymentInformation = new PaymentInformation(
+            accountName ?? document.PaymentInformation.AccountName,
+            bsb ?? document.PaymentInformation.BSB,
+            accountNumber ?? document.PaymentInformation.AccountNumber);
+        document.ContactInformation = new ContactInformation(
+            email ?? document.ContactInformation.Email);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return document;
     }
 }

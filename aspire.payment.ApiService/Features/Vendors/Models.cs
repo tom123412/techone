@@ -8,6 +8,13 @@ public record CreateVendorInformation(string LegalName, string? Abn, string Orga
 public record CreateVendorRequest(string ApplicationID, CreateVendorInformation VendorInformation, Address VendorAddress, 
     ContactInformation ContactInformation, PaymentInformation PaymentInformation);
 
+public record PatchVendorInformation(string? LegalName, string? Abn, string? OrganisationType, bool? IsSmallMediumEnterprise, bool? IsIndigenousSupplier);
+public record PatchAddress(string? AddressLine1, string? AddressLine2, string? AddressLine3, string? City, string? State, string? PostCode);
+public record PatchContactInformation(string? Email);
+public record PatchPaymentInformation(string? AccountName, string? BSB, string? AccountNumber);
+public record PatchVendorRequest(string? ApplicationID, PatchVendorInformation? VendorInformation, PatchAddress? VendorAddress,
+    PatchContactInformation? ContactInformation, PatchPaymentInformation? PaymentInformation);
+
 public record VendorInformation(string? Id, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
 
 public class VendorDocument

@@ -55,6 +55,16 @@ public static class IEndpointRouteBuilderExtensions
                 .MapToApiVersion(1, 0)
                 ;
 
+            vendorGroup
+                .MapPatch("/{id}", async Task<Results<Ok<VendorDocument>, NotFound>> (string id, PatchVendorRequest request, IVendorStore store, CancellationToken cancellationToken) =>
+                {
+                    var document = await store.PatchAsync(id, request, cancellationToken);
+                    return document is null ? TypedResults.NotFound() : TypedResults.Ok(document);
+                })
+                .WithName("PatchVendor")
+                .MapToApiVersion(1, 0)
+                ;
+
             return app;
         }
     }
