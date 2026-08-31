@@ -9,7 +9,7 @@ builder.Services.AddHttpClient("apiservice", client =>
 {
     client.BaseAddress = new Uri("http://apiservice");
 });
-builder.Services.AddHostedService<VendorProcessCsvWorker>();
+builder.Services.AddHostedService<VendorProcessIncomingCsvWorker>();
 builder.Services.AddHostedService<VendorReadyToExportWorker>();
 builder.Services.AddHostedService<VendorIncomingCsvWorker>();
 

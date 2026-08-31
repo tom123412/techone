@@ -75,7 +75,7 @@ internal sealed class VendorIncomingCsvWorker(
                 logger.LogError(ex, "Failed to fetch vendors with status InProgress");
             }
 
-            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+            await Task.Delay(options.Value.PollingInterval, stoppingToken);
         }
     }
 

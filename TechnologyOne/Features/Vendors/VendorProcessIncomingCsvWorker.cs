@@ -1,10 +1,14 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.Extensions.Options;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorProcessCsvWorker(ILogger<VendorProcessCsvWorker> logger, IHttpClientFactory httpClientFactory) : BackgroundService
+internal sealed class VendorProcessIncomingCsvWorker(
+    ILogger<VendorProcessIncomingCsvWorker> logger,
+    IHttpClientFactory httpClientFactory,
+    IOptions<VendorOptions> options) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -29,7 +33,7 @@ internal sealed class VendorProcessCsvWorker(ILogger<VendorProcessCsvWorker> log
                         null,
                         null,
                         null,
-                        null);
+                        VendorStatus.Completed);
 
                     var patchResponse = await client.PatchAsJsonAsync($"/api/vendors/{vendor.Id}", patchRequest, stoppingToken);
 
@@ -56,7 +60,7 @@ internal sealed class VendorProcessCsvWorker(ILogger<VendorProcessCsvWorker> log
                 logger.LogError(ex, "Failed to process vendors without VendorInformation.Id");
             }
 
-            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+            await Task.Delay(options.Value.PollingInterval, stoppingToken);
         }
     }
 

@@ -107,7 +107,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
                 logger.LogError(ex, "Failed to fetch vendors with status ReadyForExport");
             }
 
-            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+            await Task.Delay(options.Value.PollingInterval, stoppingToken);
         }
     }
 
