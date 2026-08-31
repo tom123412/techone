@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
@@ -24,7 +23,13 @@ internal sealed class VendorProcessCsvWorker(ILogger<VendorProcessCsvWorker> log
                 foreach (var vendor in vendorsWithoutVendorInformationId)
                 {
                     var vendorInformationId = CreateVendorInformationId(vendor.Id, generatedIds);
-                    var patchRequest = new PatchVendorRequest(new PatchVendorInformation(vendorInformationId));
+                    var patchRequest = new PatchVendorRequest(
+                        null,
+                        new PatchVendorInformation(vendorInformationId, null, null, null, null, null),
+                        null,
+                        null,
+                        null,
+                        null);
 
                     var patchResponse = await client.PatchAsJsonAsync($"/api/vendors/{vendor.Id}", patchRequest, stoppingToken);
 
@@ -74,14 +79,4 @@ internal sealed class VendorProcessCsvWorker(ILogger<VendorProcessCsvWorker> log
 
         throw new InvalidOperationException("Unable to generate a unique VendorInformation.Id.");
     }
-
-    private record VendorODataResponse([property: JsonPropertyName("value")] List<VendorPayload> Value);
-
-    private record VendorPayload(string Id, VendorInformationPayload VendorInformation);
-
-    private record VendorInformationPayload(string? Id);
-
-    private record PatchVendorRequest(PatchVendorInformation? VendorInformation);
-
-    private record PatchVendorInformation(string Id);
 }

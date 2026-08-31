@@ -1,8 +1,7 @@
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorExportOptions
+internal sealed class VendorOptions
 {
-    public const string SectionName = "VendorExport";
-
+    public const string SectionName = "Vendor";
     public required string Directory { get; set; }
 }

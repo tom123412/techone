@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorker> logger, IHttpClientFactory httpClientFactory, IOptions<VendorExportOptions> options) : BackgroundService
+internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorker> logger, IHttpClientFactory httpClientFactory, IOptions<VendorOptions> options) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -25,7 +24,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
                 var exportDirectory = Path.IsPathRooted(exportDirectorySetting)
                     ? exportDirectorySetting
                     : Path.Combine(AppContext.BaseDirectory, exportDirectorySetting);
-                Directory.CreateDirectory(exportDirectory);
+                Directory.CreateDirectory($"{exportDirectory}\\Outgoing");
 
                 var fileName = $"bulk_supplier_{DateTimeOffset.UtcNow:yyyy-MM-ddTHHmmss}.csv";
                 var filePath = Path.Combine(exportDirectory, fileName);
@@ -123,40 +122,4 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
         return $"\"{escapedValue}\"";
     }
 
-    private record VendorODataResponse([property: JsonPropertyName("value")] List<VendorPayload> Value);
-
-    private record VendorPayload(string Id, string? ApplicationId, VendorInformationPayload VendorInformation, VendorAddressPayload VendorAddress, VendorContactInformationPayload ContactInformation, 
-        VendorPaymentInformationPayload PaymentInformation);
-
-    private record VendorInformationPayload(string Status, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
-    
-    private record VendorAddressPayload(string AddressLine1, string? AddressLine2, string? AddressLine3, string City, string State, string PostCode);
-    
-    private record VendorContactInformationPayload(string Email);
-
-    private record VendorPaymentInformationPayload(string AccountName, string BSB, string AccountNumber);
-
-    private record PatchVendorRequest(
-        string? ApplicationID,
-        PatchVendorInformation? VendorInformation,
-        PatchAddress? VendorAddress,
-        PatchContactInformation? ContactInformation,
-        PatchPaymentInformation? PaymentInformation,
-        VendorStatus? Status);
-
-    private enum VendorStatus
-    {
-        ReadyForExport,
-        InProgress,
-        Completed,
-        Error,
     }
-
-    private record PatchVendorInformation(string? Id, string? LegalName, string? Abn, string? OrganisationType, bool? IsSmallMediumEnterprise, bool? IsIndigenousSupplier);
-
-    private record PatchAddress(string? AddressLine1, string? AddressLine2, string? AddressLine3, string? City, string? State, string? PostCode);
-
-    private record PatchContactInformation(string? Email);
-
-    private record PatchPaymentInformation(string? AccountName, string? BSB, string? AccountNumber);
-}
