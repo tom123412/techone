@@ -7,7 +7,8 @@ builder.Services.AddHttpClient("apiservice", client =>
 {
     client.BaseAddress = new Uri("http://apiservice");
 });
-builder.Services.AddHostedService<VendorProcessorWorker>();
+builder.Services.AddHostedService<VendorProcessCsvWorker>();
+builder.Services.AddHostedService<VendorReadyToExportWorker>();
 
 var host = builder.Build();
 host.Run();

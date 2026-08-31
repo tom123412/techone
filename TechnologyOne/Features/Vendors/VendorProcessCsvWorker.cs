@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorProcessorWorker(ILogger<VendorProcessorWorker> logger, IHttpClientFactory httpClientFactory) : BackgroundService
+internal sealed class VendorProcessCsvWorker(ILogger<VendorProcessCsvWorker> logger, IHttpClientFactory httpClientFactory) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -15,7 +15,7 @@ internal sealed class VendorProcessorWorker(ILogger<VendorProcessorWorker> logge
             {
                 var client = httpClientFactory.CreateClient("apiservice");
                 var response = await client.GetFromJsonAsync<VendorODataResponse>(
-                    "/api/vendors?$filter=VendorInformation/Id eq null",
+                    "/api/vendors?$filter=Status eq 'InProgress'",
                     stoppingToken);
 
                 var vendorsWithoutVendorInformationId = response?.Value ?? [];
@@ -51,7 +51,7 @@ internal sealed class VendorProcessorWorker(ILogger<VendorProcessorWorker> logge
                 logger.LogError(ex, "Failed to process vendors without VendorInformation.Id");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
         }
     }
 

@@ -25,7 +25,7 @@ public static class IEndpointRouteBuilderExtensions
             vendorGroup
                 .MapPost("/", async Task<Created<VendorDocument>> (CreateVendorRequest request, IVendorStore store, CancellationToken cancellationToken) =>
                 {
-                    var document = await store.SaveAsync(request, cancellationToken);
+                    var document = await store.CreateAsync(request, cancellationToken);
                     return TypedResults.Created($"/api/vendors/{document.Id}", document);
                 })
                 .WithName("CreateVendor")

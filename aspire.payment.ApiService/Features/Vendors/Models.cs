@@ -1,5 +1,13 @@
 ﻿namespace aspire.payment.ApiService.Features.Vendors;
 
+public enum Status
+{
+    ReadyForExport,
+    InProgress,
+    Completed,
+    Error,
+}
+
 public record PaymentInformation(string AccountName, string BSB, string AccountNumber);
 public record ContactInformation(string Email);
 public record Address(string AddressLine1, string? AddressLine2, string? AddressLine3, string City, string State, string PostCode);
@@ -13,9 +21,9 @@ public record PatchAddress(string? AddressLine1, string? AddressLine2, string? A
 public record PatchContactInformation(string? Email);
 public record PatchPaymentInformation(string? AccountName, string? BSB, string? AccountNumber);
 public record PatchVendorRequest(string? ApplicationID, PatchVendorInformation? VendorInformation, PatchAddress? VendorAddress,
-    PatchContactInformation? ContactInformation, PatchPaymentInformation? PaymentInformation);
+    PatchContactInformation? ContactInformation, PatchPaymentInformation? PaymentInformation, Status? Status);
 
-public record VendorInformation(string? Id, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
+public record VendorInformation(string? Id, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier, Status Status);
 
 public class VendorDocument
 {

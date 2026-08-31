@@ -7,7 +7,7 @@ public interface IPurchaseOrderLineItemStore
 
 internal sealed class PurchaseOrderLineItemCosmosStore(PurchaseOrderLineItemsCosmosDbContext dbContext) : IPurchaseOrderLineItemStore
 {
-    public async Task<PurchaseOrderLineItemDocument> SaveAsync(CreatePurchaseOrderLineItemRequest request, CancellationToken cancellationToken)
+    async Task<PurchaseOrderLineItemDocument> IPurchaseOrderLineItemStore.SaveAsync(CreatePurchaseOrderLineItemRequest request, CancellationToken cancellationToken)
     {
         var document = new PurchaseOrderLineItemDocument
         {

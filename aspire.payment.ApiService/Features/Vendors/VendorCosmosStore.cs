@@ -4,7 +4,7 @@ namespace aspire.payment.ApiService.Features.Vendors;
 
 public interface IVendorStore
 {
-    Task<VendorDocument> SaveAsync(CreateVendorRequest request, CancellationToken cancellationToken);
+    Task<VendorDocument> CreateAsync(CreateVendorRequest request, CancellationToken cancellationToken);
     Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken);
     Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken);
     Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken);
@@ -12,7 +12,7 @@ public interface IVendorStore
 
 internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVendorStore
 {
-    public async Task<VendorDocument> SaveAsync(CreateVendorRequest request, CancellationToken cancellationToken)
+    async Task<VendorDocument> IVendorStore.CreateAsync(CreateVendorRequest request, CancellationToken cancellationToken)
     {
         var (legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier) = request.VendorInformation;
 
@@ -20,7 +20,7 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         {
             Id = Guid.NewGuid().ToString("N"),
             ApplicationId = request.ApplicationID,
-            VendorInformation = new VendorInformation(null, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier),
+            VendorInformation = new VendorInformation(null, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier, Status.ReadyForExport),
             VendorAddress = request.VendorAddress,
             PaymentInformation = request.PaymentInformation,
             ContactInformation = request.ContactInformation,
@@ -34,19 +34,19 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         return document;
     }
 
-    public async Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken)
+    async Task<IQueryable<VendorDocument>> IVendorStore.QueryAsync(CancellationToken cancellationToken)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
         return dbContext.Vendors.AsQueryable();
     }
 
-    public async Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken)
+    async Task<VendorDocument?> IVendorStore.GetAsync(string id, CancellationToken cancellationToken)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
         return await dbContext.Vendors.FindAsync([id], cancellationToken);
     }
 
-    public async Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken)
+    async Task<VendorDocument?> IVendorStore.PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
 
@@ -56,7 +56,7 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
             return null;
         }
 
-        var (applicationId, requestVendorInformation, requestVendorAddress, requestContactInformation, requestPaymentInformation) = request;
+        var (applicationId, requestVendorInformation, requestVendorAddress, requestContactInformation, requestPaymentInformation, status) = request;
         var (vendorInformationId, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier) =
             requestVendorInformation ?? new PatchVendorInformation(null, null, null, null, null, null);
         var (addressLine1, addressLine2, addressLine3, city, state, postCode) =
@@ -73,7 +73,8 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
             abn ?? document.VendorInformation.Abn,
             organisationType ?? document.VendorInformation.OrganisationType,
             isSmallMediumEnterprise ?? document.VendorInformation.IsSmallMediumEnterprise,
-            isIndigenousSupplier ?? document.VendorInformation.IsIndigenousSupplier);
+            isIndigenousSupplier ?? document.VendorInformation.IsIndigenousSupplier,
+            status ?? document.VendorInformation.Status);
         document.VendorAddress = new Address(
             addressLine1 ?? document.VendorAddress.AddressLine1,
             addressLine2 ?? document.VendorAddress.AddressLine2,

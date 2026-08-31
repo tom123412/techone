@@ -7,7 +7,7 @@ public interface IPaymentStore
 
 internal sealed class PaymentCosmosStore(PaymentsCosmosDbContext dbContext) : IPaymentStore
 {
-    public async Task<PaymentDocument> SaveAsync(CreatePaymentRequest request, CancellationToken cancellationToken)
+    async Task<PaymentDocument> IPaymentStore.SaveAsync(CreatePaymentRequest request, CancellationToken cancellationToken)
     {
         var document = new PaymentDocument
         {
