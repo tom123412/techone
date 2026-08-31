@@ -11,7 +11,7 @@ builder.Services.AddHttpClient("apiservice", client =>
 });
 builder.Services.AddHostedService<VendorProcessIncomingCsvWorker>();
 builder.Services.AddHostedService<VendorReadyToExportWorker>();
-builder.Services.AddHostedService<VendorIncomingCsvWorker>();
+builder.Services.AddHostedService<VendorGenerateIncomingCsvWorker>();
 
 var host = builder.Build();
 host.Run();

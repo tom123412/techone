@@ -5,8 +5,8 @@ using System.Text;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorIncomingCsvWorker(
-    ILogger<VendorIncomingCsvWorker> logger,
+internal sealed class VendorGenerateIncomingCsvWorker(
+    ILogger<VendorGenerateIncomingCsvWorker> logger,
     IHttpClientFactory httpClientFactory,
     IOptions<VendorOptions> options) : BackgroundService
 {
