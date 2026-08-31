@@ -23,11 +23,12 @@ public record PatchPaymentInformation(string? AccountName, string? BSB, string? 
 public record PatchVendorRequest(string? ApplicationID, PatchVendorInformation? VendorInformation, PatchAddress? VendorAddress,
     PatchContactInformation? ContactInformation, PatchPaymentInformation? PaymentInformation, Status? Status);
 
-public record VendorInformation(string? Id, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier, Status Status);
+public record VendorInformation(string? Id, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
 
 public class VendorDocument
 {
     public required string Id { get; set; }
+    public required Status Status { get; set; }
     public required string ApplicationId { get; set; }
     public required VendorInformation VendorInformation { get; set; }
     public required Address VendorAddress { get; set; }

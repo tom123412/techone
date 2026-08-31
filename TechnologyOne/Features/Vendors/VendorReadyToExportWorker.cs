@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorker> logger, IHttpClientFactory httpClientFactory) : BackgroundService
+internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorker> logger, IHttpClientFactory httpClientFactory, IOptions<VendorExportOptions> options) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -17,10 +19,85 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
                     stoppingToken);
 
                 var readyToExportVendors = response?.Value ?? [];
+                var exportDirectorySetting = string.IsNullOrWhiteSpace(options.Value.Directory)
+                    ? "exports"
+                    : options.Value.Directory;
+                var exportDirectory = Path.IsPathRooted(exportDirectorySetting)
+                    ? exportDirectorySetting
+                    : Path.Combine(AppContext.BaseDirectory, exportDirectorySetting);
+                Directory.CreateDirectory(exportDirectory);
+
+                var fileName = $"bulk_supplier_{DateTimeOffset.UtcNow:yyyy-MM-ddTHHmmss}.csv";
+                var filePath = Path.Combine(exportDirectory, fileName);
+
+                var csv = new StringBuilder();
+                csv.AppendLine("ACCNAME1,BUSREGNBR,SELNCODE1,SELNCODE5,SELNCODE6,USERFLD2,POSTNAME,ADDR1,ADDR2,ADDR3,CITY,STATE,POSTCODE,EMAILADDR,PAYNAME,BSBCODE,BANKACCT,ENQCOMMENT1,USERFLD10");
+
+                foreach (var vendor in readyToExportVendors)
+                {
+                    csv.Append(EscapeCsv(vendor.VendorInformation.LegalName));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.Abn));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.OrganisationType));
+
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.IsSmallMediumEnterprise.ToString()));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.IsIndigenousSupplier.ToString()));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.ApplicationId));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.LegalName));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorAddress.AddressLine1));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorAddress.AddressLine2));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorAddress.AddressLine3));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorAddress.City));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorAddress.State));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorAddress.PostCode));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.ContactInformation.Email));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.PaymentInformation.AccountName));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.PaymentInformation.BSB));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.PaymentInformation.AccountNumber));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.OrganisationType));
+                    csv.Append(',');
+                    csv.Append(EscapeCsv(vendor.VendorInformation.OrganisationType));
+                    csv.AppendLine();
+                }
+
+                await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8, stoppingToken);
+
+                foreach (var vendor in readyToExportVendors)
+                {
+                    var patchResponse = await client.PatchAsJsonAsync(
+                        $"/api/vendors/{vendor.Id}",
+                        new PatchVendorRequest(null, null, null, null, null, VendorStatus.InProgress),
+                        stoppingToken);
+
+                    if (!patchResponse.IsSuccessStatusCode)
+                    {
+                        logger.LogWarning(
+                            "Failed updating vendor {VendorId} to InProgress. StatusCode: {StatusCode}",
+                            vendor.Id,
+                            patchResponse.StatusCode);
+                    }
+                }
 
                 logger.LogInformation(
-                    "Fetched {VendorCount} vendors with status ReadyForExport",
-                    readyToExportVendors.Count);
+                    "Fetched {VendorCount} vendors with status ReadyForExport, wrote CSV to {FilePath}, and attempted status updates to InProgress",
+                    readyToExportVendors.Count,
+                    filePath);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -35,7 +112,51 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
         }
     }
 
+    private static string EscapeCsv(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        var escapedValue = value.Replace("\"", "\"\"");
+        return $"\"{escapedValue}\"";
+    }
+
     private record VendorODataResponse([property: JsonPropertyName("value")] List<VendorPayload> Value);
 
-    private record VendorPayload(string Id);
+    private record VendorPayload(string Id, string? ApplicationId, VendorInformationPayload VendorInformation, VendorAddressPayload VendorAddress, VendorContactInformationPayload ContactInformation, 
+        VendorPaymentInformationPayload PaymentInformation);
+
+    private record VendorInformationPayload(string Status, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
+    
+    private record VendorAddressPayload(string AddressLine1, string? AddressLine2, string? AddressLine3, string City, string State, string PostCode);
+    
+    private record VendorContactInformationPayload(string Email);
+
+    private record VendorPaymentInformationPayload(string AccountName, string BSB, string AccountNumber);
+
+    private record PatchVendorRequest(
+        string? ApplicationID,
+        PatchVendorInformation? VendorInformation,
+        PatchAddress? VendorAddress,
+        PatchContactInformation? ContactInformation,
+        PatchPaymentInformation? PaymentInformation,
+        VendorStatus? Status);
+
+    private enum VendorStatus
+    {
+        ReadyForExport,
+        InProgress,
+        Completed,
+        Error,
+    }
+
+    private record PatchVendorInformation(string? Id, string? LegalName, string? Abn, string? OrganisationType, bool? IsSmallMediumEnterprise, bool? IsIndigenousSupplier);
+
+    private record PatchAddress(string? AddressLine1, string? AddressLine2, string? AddressLine3, string? City, string? State, string? PostCode);
+
+    private record PatchContactInformation(string? Email);
+
+    private record PatchPaymentInformation(string? AccountName, string? BSB, string? AccountNumber);
 }

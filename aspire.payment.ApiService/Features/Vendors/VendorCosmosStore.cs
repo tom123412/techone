@@ -20,11 +20,12 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         {
             Id = Guid.NewGuid().ToString("N"),
             ApplicationId = request.ApplicationID,
-            VendorInformation = new VendorInformation(null, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier, Status.ReadyForExport),
+            VendorInformation = new VendorInformation(null, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier),
             VendorAddress = request.VendorAddress,
             PaymentInformation = request.PaymentInformation,
             ContactInformation = request.ContactInformation,
-            CreatedAtUtc = DateTimeOffset.UtcNow
+            Status = Status.ReadyForExport,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
         };
 
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
@@ -73,8 +74,8 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
             abn ?? document.VendorInformation.Abn,
             organisationType ?? document.VendorInformation.OrganisationType,
             isSmallMediumEnterprise ?? document.VendorInformation.IsSmallMediumEnterprise,
-            isIndigenousSupplier ?? document.VendorInformation.IsIndigenousSupplier,
-            status ?? document.VendorInformation.Status);
+            isIndigenousSupplier ?? document.VendorInformation.IsIndigenousSupplier);
+        document.Status = status ?? document.Status;
         document.VendorAddress = new Address(
             addressLine1 ?? document.VendorAddress.AddressLine1,
             addressLine2 ?? document.VendorAddress.AddressLine2,
