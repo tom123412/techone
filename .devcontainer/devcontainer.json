@@ -1,0 +1,93 @@
+{
+  "name": "Aspire Payment System",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:latest": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:latest": {},
+    "ghcr.io/devcontainers/features/kubernetes-helm-minikube:latest": {
+      "version": "latest",
+      "minikube": "latest",
+      "helm": "latest",
+      "kubectl": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:latest": {},
+    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/azure/azure-dev/azd-feature:0": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "microsoft-aspire.aspire-vscode",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime"
+      ],
+      "settings": {
+        "dotnet.defaultSolutionOrFolder": "${workspaceFolder}/aspire.payment.slnx",
+        "[csharp]": {
+          "editor.defaultFormatter": "ms-dotnettools.csharp",
+          "editor.formatOnSave": true
+        }
+      }
+    }
+  },
+  "forwardPorts": [
+    5000,
+    5001,
+    5050,
+    5051,
+    8080,
+    8081,
+    17000,
+    17001,
+    15432
+  ],
+  "portsAttributes": {
+    "5000": {
+      "label": "HTTP",
+      "onAutoForward": "notify"
+    },
+    "5001": {
+      "label": "HTTPS",
+      "onAutoForward": "notify"
+    },
+    "5050": {
+      "label": "AppHost HTTP",
+      "onAutoForward": "notify"
+    },
+    "5051": {
+      "label": "AppHost HTTPS",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Dashboard",
+      "onAutoForward": "notify"
+    },
+    "8081": {
+      "label": "Alternative Service",
+      "onAutoForward": "notify"
+    },
+    "17000": {
+      "label": "OTLP gRPC",
+      "onAutoForward": "notify"
+    },
+    "17001": {
+      "label": "OTLP HTTP",
+      "onAutoForward": "notify"
+    },
+    "15432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "dotnet restore aspire.payment.slnx && dotnet tool install -g Microsoft.Tye --version '0.14.0-*' 2>/dev/null || true && dotnet tool update -g aspire-hosting-cli 2>/dev/null || true",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "remoteUser": "root",
+  "remoteEnv": {
+    "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
+  }
+}
