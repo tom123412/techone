@@ -2,18 +2,22 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddAzureContainerAppEnvironment("aca-env");
 
-var cosmosName = builder.AddParameter("ExistingCosmosAccountName");
-var resourceGroup = builder.AddParameter("ExistingCosmosResourceGroup");
+//var cosmosName = builder.AddParameter("ExistingCosmosAccountName");
+//var resourceGroup = builder.AddParameter("ExistingCosmosResourceGroup");
 
-var cosmosDb = builder
+var cosmosDb1 = builder
     .AddAzureCosmosDB("cosmosdb1")
     //.RunAsEmulator()
     .ClearDefaultRoleAssignments()
     //.PublishAsExisting(cosmosName, resourceGroup)
-    .RunAsExisting(cosmosName, resourceGroup)
+    //.RunAsExisting(cosmosName, resourceGroup)
     ;
 
+var cosmosAccount = builder.AddAzureCosmosDB("cosmos-account");
+var cosmosDb = cosmosAccount.AddCosmosDatabase("cosmos-db");
+
 var apiService = builder.AddProject<Projects.aspire_payment_ApiService>("apiservice")
+    .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(cosmosDb)
     ;

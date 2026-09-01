@@ -13,8 +13,8 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
-var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb")
-    ?? throw new InvalidOperationException("Connection string 'cosmosdb' was not configured.");
+var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-db")
+    ?? throw new InvalidOperationException("Connection string 'cosmos-db' was not configured.");
 builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
     options.UseCosmos(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
 builder.Services.AddDbContext<VendorsCosmosDbContext>(options =>
@@ -43,7 +43,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwaggerUI(options =>
