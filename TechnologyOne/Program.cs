@@ -5,6 +5,8 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.Configure<VendorOptions>(
     builder.Configuration.GetSection(VendorOptions.SectionName));
+builder.Services.Configure<FieldMappingsOptions>(
+    builder.Configuration.GetSection(FieldMappingsOptions.SectionName));
 builder.Services.AddHttpClient("apiservice", client =>
 {
     client.BaseAddress = new Uri("http://apiservice");

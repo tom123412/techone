@@ -4,7 +4,8 @@ using System.Text;
 
 namespace aspire.payment.TechnologyOne.Features.Vendors;
 
-internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorker> logger, IHttpClientFactory httpClientFactory, IOptions<VendorOptions> options) : BackgroundService
+internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorker> logger, IHttpClientFactory httpClientFactory, 
+    IOptions<VendorOptions> options, IOptions<FieldMappingsOptions> fieldMappingsOptions) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -32,6 +33,8 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
                 var csv = new StringBuilder();
                 csv.AppendLine("ACCNAME1,BUSREGNBR,SELNCODE1,SELNCODE5,SELNCODE6,USERFLD2,POSTNAME,ADDR1,ADDR2,ADDR3,CITY,STATE,POSTCODE,EMAILADDR,PAYNAME,BSBCODE,BANKACCT,ENQCOMMENT1,USERFLD10");
 
+                var userFld2Key = fieldMappingsOptions.Value.TechnologyOne["USERFLD2"];
+
                 foreach (var vendor in readyToExportVendors)
                 {
                     csv.Append(EscapeCsv(vendor.VendorInformation.LegalName));
@@ -45,7 +48,10 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
                     csv.Append(',');
                     csv.Append(EscapeCsv(vendor.VendorInformation.IsIndigenousSupplier.ToString()));
                     csv.Append(',');
-                    csv.Append(EscapeCsv(vendor.ApplicationId));
+
+                    var userFld2 = vendor.Metadata.SingleOrDefault(m => m.Key == userFld2Key)?.Value;
+
+                    csv.Append(EscapeCsv(userFld2));
                     csv.Append(',');
                     csv.Append(EscapeCsv(vendor.VendorInformation.LegalName));
                     csv.Append(',');
