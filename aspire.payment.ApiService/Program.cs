@@ -14,15 +14,15 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
-var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-account")
-    ?? throw new InvalidOperationException("Connection string 'cosmos-account' was not configured.");
-
 builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
-    options.UseCosmosConnectionStringOrManagedIdentity(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
+    options.UseCosmosConnectionStringOrManagedIdentity(builder.Configuration.GetConnectionString("payments")
+        ?? throw new InvalidOperationException("Connection string 'payments' was not configured.")));
 builder.Services.AddDbContext<VendorsCosmosDbContext>(options =>
-    options.UseCosmosConnectionStringOrManagedIdentity(cosmosConnectionString, VendorsCosmosDbContext.DatabaseId));
+    options.UseCosmosConnectionStringOrManagedIdentity(builder.Configuration.GetConnectionString("vendors")
+        ?? throw new InvalidOperationException("Connection string 'vendors' was not configured.")));
 builder.Services.AddDbContext<PurchaseOrderLineItemsCosmosDbContext>(options =>
-    options.UseCosmosConnectionStringOrManagedIdentity(cosmosConnectionString, PurchaseOrderLineItemsCosmosDbContext.DatabaseId));
+    options.UseCosmosConnectionStringOrManagedIdentity(builder.Configuration.GetConnectionString("purchase-order-line-items")
+        ?? throw new InvalidOperationException("Connection string 'purchase-order-line-items' was not configured.")));
 
 builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddScoped<IVendorStore, VendorCosmosStore>();

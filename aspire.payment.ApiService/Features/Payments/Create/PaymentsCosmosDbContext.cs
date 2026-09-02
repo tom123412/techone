@@ -4,8 +4,6 @@ namespace aspire.payment.ApiService.Features.Payments.Create;
 
 internal sealed class PaymentsCosmosDbContext(DbContextOptions<PaymentsCosmosDbContext> options) : DbContext(options)
 {
-    public const string DatabaseId = "payments";
-
     public DbSet<PaymentDocument> Payments => Set<PaymentDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

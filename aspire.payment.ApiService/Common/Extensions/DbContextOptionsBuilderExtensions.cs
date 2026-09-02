@@ -4,8 +4,9 @@ public static class DbContextOptionsBuilderExtensions
 {
     extension (DbContextOptionsBuilder options)
     {
-        public DbContextOptionsBuilder UseCosmosConnectionStringOrManagedIdentity(string connectionString, string databaseName)
+        public DbContextOptionsBuilder UseCosmosConnectionStringOrManagedIdentity(string connectionString)
         {
+            var databaseName = GetConnectionStringProperty(connectionString, "Database");
             if (connectionString.Contains("AccountKey="))
             {
                 return options.UseCosmos(connectionString, databaseName: databaseName);
@@ -16,7 +17,6 @@ public static class DbContextOptionsBuilderExtensions
                 return options.UseCosmos(endpoint, new Azure.Identity.DefaultAzureCredential(), databaseName: databaseName);
             }
         }
-
         
         private static string GetConnectionStringProperty(string connectionString, string propertyName)
         {

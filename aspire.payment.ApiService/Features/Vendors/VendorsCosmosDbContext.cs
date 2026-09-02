@@ -4,8 +4,6 @@ namespace aspire.payment.ApiService.Features.Vendors;
 
 internal sealed class VendorsCosmosDbContext(DbContextOptions<VendorsCosmosDbContext> options) : DbContext(options)
 {
-    public const string DatabaseId = "payments";
-
     public DbSet<VendorDocument> Vendors => Set<VendorDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

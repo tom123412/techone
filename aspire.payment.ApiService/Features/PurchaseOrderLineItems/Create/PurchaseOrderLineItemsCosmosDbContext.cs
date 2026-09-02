@@ -4,15 +4,13 @@ namespace aspire.payment.ApiService.Features.PurchaseOrderLineItems.Create;
 
 internal sealed class PurchaseOrderLineItemsCosmosDbContext(DbContextOptions<PurchaseOrderLineItemsCosmosDbContext> options) : DbContext(options)
 {
-    public const string DatabaseId = "payments";
-
     public DbSet<PurchaseOrderLineItemDocument> PurchaseOrderLineItems => Set<PurchaseOrderLineItemDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<PurchaseOrderLineItemDocument>(entity =>
         {
-            entity.ToContainer("purchaseorderlineitems");
+            entity.ToContainer("purchase-order-line-items");
             entity.HasKey(document => document.Id);
             entity.HasPartitionKey(document => document.Id);
 
