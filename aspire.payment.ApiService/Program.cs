@@ -2,6 +2,7 @@ using Asp.Versioning;
 using aspire.payment.ApiService.Features.Payments.Create;
 using aspire.payment.ApiService.Features.PurchaseOrderLineItems.Create;
 using aspire.payment.ApiService.Features.Vendors;
+using Azure.Identity;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,14 +14,15 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
-var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb") ?? builder.Configuration.GetConnectionString("cosmos-db")
-    ?? throw new InvalidOperationException("Connection string 'cosmos-db' was not configured.");
+var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-account")
+    ?? throw new InvalidOperationException("Connection string 'cosmos-account' was not configured.");
+
 builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
-    options.UseCosmos(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
+    options.UseCosmosConnectionStringOrManagedIdentity(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
 builder.Services.AddDbContext<VendorsCosmosDbContext>(options =>
-    options.UseCosmos(cosmosConnectionString, VendorsCosmosDbContext.DatabaseId));
+    options.UseCosmosConnectionStringOrManagedIdentity(cosmosConnectionString, VendorsCosmosDbContext.DatabaseId));
 builder.Services.AddDbContext<PurchaseOrderLineItemsCosmosDbContext>(options =>
-    options.UseCosmos(cosmosConnectionString, PurchaseOrderLineItemsCosmosDbContext.DatabaseId));
+    options.UseCosmosConnectionStringOrManagedIdentity(cosmosConnectionString, PurchaseOrderLineItemsCosmosDbContext.DatabaseId));
 
 builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddScoped<IVendorStore, VendorCosmosStore>();

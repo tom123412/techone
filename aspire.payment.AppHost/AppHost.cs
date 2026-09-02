@@ -1,20 +1,27 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddAzureContainerAppEnvironment("aca-env");
 
-var cosmosName = builder.AddParameter("ExistingCosmosAccountName");
-var resourceGroup = builder.AddParameter("ExistingCosmosResourceGroup");
-
-var cosmosDb = builder
-    .AddAzureCosmosDB("cosmos-db")
+//var cosmosDb = builder
+//    .AddAzureCosmosDB("cosmos-db")
     //.RunAsEmulator()
-    .ClearDefaultRoleAssignments()
+//    .ClearDefaultRoleAssignments()
     //.PublishAsExisting(cosmosName, resourceGroup)
-    .RunAsExisting(cosmosName, resourceGroup)
-    ;
+//    .RunAsExisting(cosmosName, resourceGroup)
+//    ;
 
-//var cosmosAccount = builder.AddAzureCosmosDB("cosmos-account");
-//var cosmosDb = cosmosAccount.AddCosmosDatabase("cosmos-db");
+var cosmosAccount = builder.AddAzureCosmosDB("cosmos-account");
+var cosmosDb = cosmosAccount.AddCosmosDatabase("cosmos-db");
+
+if (builder.Environment.IsDevelopment())
+{
+    var cosmosName = builder.AddParameter("ExistingCosmosAccountName");
+    var resourceGroup = builder.AddParameter("ExistingCosmosResourceGroup");
+    
+    cosmosAccount.WithAccessKeyAuthentication();
+}
 
 var apiService = builder.AddProject<Projects.aspire_payment_ApiService>("apiservice")
     .WithExternalHttpEndpoints()
