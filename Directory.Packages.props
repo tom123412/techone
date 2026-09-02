@@ -5,6 +5,7 @@
   <ItemGroup>
     <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
     <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.5.3" />
+    <PackageVersion Include="Aspire.Hosting.Azure.ApplicationInsights" Version="13.5.3" />
     <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.5.3" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.5.3" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />

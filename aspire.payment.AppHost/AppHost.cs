@@ -24,12 +24,16 @@ if (builder.Environment.IsDevelopment())
         ;
 }
 
+var logAnalytics = builder.AddAzureLogAnalyticsWorkspace("logs");
+var azureMonitor = builder.AddAzureApplicationInsights("azure-monitor", logAnalytics);
+
 var apiService = builder.AddProject<Projects.aspire_payment_ApiService>("apiservice")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
     .WithReference(payments)
     .WithReference(vendors)
     .WithReference(purchaseOrderLineItems)
+    .WithReference(azureMonitor)
     ;
 
 builder.AddProject<Projects.aspire_payment_Web>("webfrontend")
@@ -41,6 +45,7 @@ builder.AddProject<Projects.aspire_payment_Web>("webfrontend")
 
 builder.AddProject<Projects.aspire_payment_TechnologyOne>("technologyone")
     .WithReference(apiService)
+    .WithReference(azureMonitor)
     .WaitFor(apiService)
     ;
 
