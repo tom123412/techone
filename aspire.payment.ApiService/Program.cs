@@ -13,7 +13,7 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
-var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmos-db")
+var cosmosConnectionString = builder.Configuration.GetConnectionString("cosmosdb") ?? builder.Configuration.GetConnectionString("cosmos-db")
     ?? throw new InvalidOperationException("Connection string 'cosmos-db' was not configured.");
 builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
     options.UseCosmos(cosmosConnectionString, PaymentsCosmosDbContext.DatabaseId));
@@ -26,17 +26,16 @@ builder.Services.AddScoped<IPaymentStore, PaymentCosmosStore>();
 builder.Services.AddScoped<IVendorStore, VendorCosmosStore>();
 builder.Services.AddScoped<IPurchaseOrderLineItemStore, PurchaseOrderLineItemCosmosStore>();
 
-builder.Services.AddOData(options => options.EnableAll());
-
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.AddApiVersioning(options =>
 {
-    options.DefaultApiVersion = new ApiVersion(1, 0);
     options.AssumeDefaultVersionWhenUnspecified = true;
     options.ReportApiVersions = true;
 });
+
+builder.Services.AddOData(options => options.EnableAll());
 
 var app = builder.Build();
 
