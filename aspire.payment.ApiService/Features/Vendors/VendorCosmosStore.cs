@@ -19,11 +19,12 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         var document = new VendorDocument
         {
             Id = Guid.NewGuid().ToString("N"),
-            ApplicationId = request.ApplicationID,
+            ApplicationId = request.ApplicationId,
             VendorInformation = new VendorInformation(null, legalName, abn, organisationType, isSmallMediumEnterprise, isIndigenousSupplier),
             VendorAddress = request.VendorAddress,
             PaymentInformation = request.PaymentInformation,
             ContactInformation = request.ContactInformation,
+            Metadata = request.Metadata,
             Status = Status.ReadyForExport,
             CreatedAtUtc = DateTimeOffset.UtcNow,
         };

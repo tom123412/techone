@@ -10,7 +10,8 @@ internal record VendorPayload(
     VendorInformationPayload VendorInformation,
     VendorAddressPayload VendorAddress,
     VendorContactInformationPayload ContactInformation,
-    VendorPaymentInformationPayload PaymentInformation);
+    VendorPaymentInformationPayload PaymentInformation,
+    IReadOnlyList<VendorMetadataPayload> Metadata);
 
 internal record VendorInformationPayload(string Status, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
 
@@ -19,6 +20,7 @@ internal record VendorAddressPayload(string AddressLine1, string? AddressLine2, 
 internal record VendorContactInformationPayload(string Email);
 
 internal record VendorPaymentInformationPayload(string AccountName, string BSB, string AccountNumber);
+internal record VendorMetadataPayload(string Key, string Value);
 
 internal record PatchVendorRequest(
     string? ApplicationID,

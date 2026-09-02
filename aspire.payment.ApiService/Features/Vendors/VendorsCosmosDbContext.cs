@@ -20,6 +20,13 @@ internal sealed class VendorsCosmosDbContext(DbContextOptions<VendorsCosmosDbCon
             entity.Property(document => document.ApplicationId).ToJsonProperty("applicationId");
             entity.Property(document => document.CreatedAtUtc).ToJsonProperty("createdAtUtc");
 
+            entity.OwnsMany(document => document.Metadata, metadata =>
+            {
+                metadata.ToJsonProperty("metadata");
+                metadata.Property(value => value.Key).ToJsonProperty("key");
+                metadata.Property(value => value.Value).ToJsonProperty("value");
+            });
+
             entity.OwnsOne(document => document.VendorInformation, party =>
             {
                 party.ToJsonProperty("vendorPartyInformation");
