@@ -8,7 +8,7 @@ public interface IVendorStore
     Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken);
     Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken);
     Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken);
-    Task<VendorWebhookSubscription?> SubscribeAsync(string id, CreateVendorSubscriptionRequest request, CancellationToken cancellationToken);
+    Task<VendorWebhookSubscription> SubscribeAsync(CreateVendorSubscriptionRequest request, CancellationToken cancellationToken);
 }
 
 internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVendorStore
@@ -97,24 +97,20 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         return document;
     }
 
-    async Task<VendorWebhookSubscription?> IVendorStore.SubscribeAsync(string id, CreateVendorSubscriptionRequest request, CancellationToken cancellationToken)
+    async Task<VendorWebhookSubscription> IVendorStore.SubscribeAsync(CreateVendorSubscriptionRequest request, CancellationToken cancellationToken)
     {
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
 
-        var document = await dbContext.Vendors.FindAsync([id], cancellationToken);
-        if (document is null)
+        var document = new VendorSubscriptionDocument
         {
-            return null;
-        }
+            Id = Guid.NewGuid().ToString("N"),
+            CallbackUrl = request.CallbackUrl,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+        };
 
-        var subscription = new VendorWebhookSubscription(
-            Guid.NewGuid().ToString("N"),
-            request.CallbackUrl,
-            DateTimeOffset.UtcNow);
-
-        document.Subscriptions = [.. document.Subscriptions, subscription];
-
+        dbContext.VendorSubscriptions.Add(document);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return subscription;
+
+        return new VendorWebhookSubscription(document.Id, document.CallbackUrl, document.CreatedAtUtc);
     }
 }

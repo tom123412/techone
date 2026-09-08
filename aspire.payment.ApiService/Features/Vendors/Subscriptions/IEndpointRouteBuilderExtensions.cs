@@ -19,7 +19,7 @@ internal static class VendorSubscriptionEndpointRouteBuilderExtensions
             ;
 
         vendorGroup
-            .MapPost("/{id}/subscriptions", async Task<Results<Created<VendorWebhookSubscription>, NotFound, ValidationProblem>> (string id, CreateVendorSubscriptionRequest request, IVendorStore store, CancellationToken cancellationToken) =>
+            .MapPost("/subscriptions", async Task<Results<Created<VendorWebhookSubscription>, ValidationProblem>> (CreateVendorSubscriptionRequest request, IVendorStore store, CancellationToken cancellationToken) =>
             {
                 if (!Uri.TryCreate(request.CallbackUrl, UriKind.Absolute, out var callbackUri) ||
                     (callbackUri.Scheme != Uri.UriSchemeHttp && callbackUri.Scheme != Uri.UriSchemeHttps))
@@ -30,12 +30,10 @@ internal static class VendorSubscriptionEndpointRouteBuilderExtensions
                     });
                 }
 
-                var subscription = await store.SubscribeAsync(id, request, cancellationToken);
-                return subscription is null
-                    ? TypedResults.NotFound()
-                    : TypedResults.Created($"/api/vendors/{id}/subscriptions/{subscription.Id}", subscription);
+                var subscription = await store.SubscribeAsync(request, cancellationToken);
+                return TypedResults.Created($"/api/vendors/subscriptions/{subscription.Id}", subscription);
             })
-            .WithName("SubscribeVendor")
+            .WithName("SubscribeVendors")
             .MapToApiVersion(1, 0)
             ;
 

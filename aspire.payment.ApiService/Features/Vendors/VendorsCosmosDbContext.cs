@@ -5,6 +5,7 @@ namespace aspire.payment.ApiService.Features.Vendors;
 internal sealed class VendorsCosmosDbContext(DbContextOptions<VendorsCosmosDbContext> options) : DbContext(options)
 {
     public DbSet<VendorDocument> Vendors => Set<VendorDocument>();
+    public DbSet<VendorSubscriptionDocument> VendorSubscriptions => Set<VendorSubscriptionDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +67,17 @@ internal sealed class VendorsCosmosDbContext(DbContextOptions<VendorsCosmosDbCon
                 contact.ToJsonProperty("contactInformation");
                 contact.Property(value => value.Email).ToJsonProperty("email");
             });
+        });
+
+        modelBuilder.Entity<VendorSubscriptionDocument>(entity =>
+        {
+            entity.ToContainer("vendor-subscriptions");
+            entity.HasKey(document => document.Id);
+            entity.HasPartitionKey(document => document.Id);
+
+            entity.Property(document => document.Id).ToJsonProperty("id");
+            entity.Property(document => document.CallbackUrl).ToJsonProperty("callbackUrl");
+            entity.Property(document => document.CreatedAtUtc).ToJsonProperty("createdAtUtc");
         });
     }
 }
