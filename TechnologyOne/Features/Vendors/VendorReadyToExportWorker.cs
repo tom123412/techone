@@ -15,14 +15,10 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
         {
             try
             {
-                var client = httpClientFactory.CreateClient("apiservice");
-
                 if (!_isRegisteredForVendorEvents)
                 {
-                    _isRegisteredForVendorEvents = await RegisterForVendorEventsAsync(client, stoppingToken);
+                    _isRegisteredForVendorEvents = await RegisterForVendorEventsAsync(stoppingToken);
                 }
-
-                await ProcessReadyToExportVendorsAsync(client, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -49,7 +45,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
         await ProcessVendorsAsync(client, [vendorCreatedEvent.Vendor], cancellationToken);
     }
 
-    private async Task<bool> RegisterForVendorEventsAsync(HttpClient client, CancellationToken cancellationToken)
+    private async Task<bool> RegisterForVendorEventsAsync(CancellationToken cancellationToken)
     {
         var callbackUrl = options.Value.SubscriptionCallbackUrl;
         if (string.IsNullOrWhiteSpace(callbackUrl))
@@ -57,6 +53,8 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
             logger.LogWarning("Vendor subscription callback URL is empty. Skipping vendor event registration.");
             return false;
         }
+
+        var client = httpClientFactory.CreateClient("apiservice");
 
         using var subscribeResponse = await client.PostAsJsonAsync(
             "/api/vendors/subscriptions",
@@ -73,23 +71,8 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
         return true;
     }
 
-    private async Task ProcessReadyToExportVendorsAsync(HttpClient client, CancellationToken cancellationToken)
-    {
-        var response = await client.GetFromJsonAsync<VendorODataResponse>(
-            "/api/vendors?$filter=Status eq 'ReadyForExport'",
-            cancellationToken);
-
-        var readyToExportVendors = response?.Value ?? [];
-        await ProcessVendorsAsync(client, readyToExportVendors, cancellationToken);
-    }
-
     private async Task ProcessVendorsAsync(HttpClient client, List<VendorPayload> vendors, CancellationToken cancellationToken)
     {
-        if (vendors.Count == 0)
-        {
-            return;
-        }
-
         var exportDirectorySetting = string.IsNullOrWhiteSpace(options.Value.Directory)
             ? "exports"
             : options.Value.Directory;
@@ -106,7 +89,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
 
         var userFld2Key = fieldMappingsOptions.Value.TechnologyOne["USERFLD2"];
 
-        foreach (var vendor in vendors)
+        foreach (var vendor in vendors.Where(v => v.Status == VendorStatus.ReadyForExport))
         {
             csv.Append(EscapeCsv(vendor.VendorInformation.LegalName));
             csv.Append(',');
