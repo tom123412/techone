@@ -4,5 +4,6 @@ internal sealed class VendorOptions
 {
     public const string SectionName = "Vendor";
     public required string Directory { get; set; }
+    public required string SubscriptionCallbackUrl { get; set; }
     public TimeSpan PollingInterval { get; set; } = TimeSpan.FromDays(1);
 }
