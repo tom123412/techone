@@ -68,11 +68,28 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
         }
 
         logger.LogInformation("Registered vendor event subscription for callback {CallbackUrl}", callbackUrl);
+
+        var response = await client.GetFromJsonAsync<VendorODataResponse>(
+            $"/api/vendors?$filter=Status eq '{VendorStatus.ReadyForExport}'",
+            cancellationToken);
+
+        var readyToExportVendors = response?.Value ?? [];
+        if (readyToExportVendors.Count > 0)
+        {
+            await ProcessVendorsAsync(client, readyToExportVendors, cancellationToken);
+        }
+
         return true;
     }
 
     private async Task ProcessVendorsAsync(HttpClient client, List<VendorPayload> vendors, CancellationToken cancellationToken)
     {
+        var readyVendors = vendors.Where(v => v.Status == VendorStatus.ReadyForExport).ToList();
+        if (readyVendors.Count == 0)
+        {
+            return;
+        }
+
         var exportDirectorySetting = string.IsNullOrWhiteSpace(options.Value.Directory)
             ? "exports"
             : options.Value.Directory;
@@ -89,7 +106,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
 
         var userFld2Key = fieldMappingsOptions.Value.TechnologyOne["USERFLD2"];
 
-        foreach (var vendor in vendors.Where(v => v.Status == VendorStatus.ReadyForExport))
+        foreach (var vendor in readyVendors)
         {
             csv.Append(EscapeCsv(vendor.VendorInformation.LegalName));
             csv.Append(',');
@@ -137,7 +154,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
 
         await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8, cancellationToken);
 
-        foreach (var vendor in vendors)
+        foreach (var vendor in readyVendors)
         {
             using var patchResponse = await client.PatchAsJsonAsync(
                 $"/api/vendors/{vendor.Id}",
@@ -155,7 +172,7 @@ internal sealed class VendorReadyToExportWorker(ILogger<VendorReadyToExportWorke
 
         logger.LogInformation(
             "Processed {VendorCount} vendor(s), wrote CSV to {FilePath}, and attempted status updates to InProgress",
-            vendors.Count,
+            readyVendors.Count,
             filePath);
     }
 
