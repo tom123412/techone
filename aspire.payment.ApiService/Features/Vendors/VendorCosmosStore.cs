@@ -8,6 +8,7 @@ public interface IVendorStore
     Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken);
     Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken);
     Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken);
+    Task<VendorWebhookSubscription?> SubscribeAsync(string id, CreateVendorSubscriptionRequest request, CancellationToken cancellationToken);
 }
 
 internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVendorStore
@@ -25,6 +26,7 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
             PaymentInformation = request.PaymentInformation,
             ContactInformation = request.ContactInformation,
             Metadata = request.Metadata,
+            Subscriptions = [],
             Status = Status.ReadyForExport,
             CreatedAtUtc = DateTimeOffset.UtcNow,
         };
@@ -93,5 +95,26 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return document;
+    }
+
+    async Task<VendorWebhookSubscription?> IVendorStore.SubscribeAsync(string id, CreateVendorSubscriptionRequest request, CancellationToken cancellationToken)
+    {
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+
+        var document = await dbContext.Vendors.FindAsync([id], cancellationToken);
+        if (document is null)
+        {
+            return null;
+        }
+
+        var subscription = new VendorWebhookSubscription(
+            Guid.NewGuid().ToString("N"),
+            request.CallbackUrl,
+            DateTimeOffset.UtcNow);
+
+        document.Subscriptions = [.. document.Subscriptions, subscription];
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return subscription;
     }
 }

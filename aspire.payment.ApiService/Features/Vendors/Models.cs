@@ -33,6 +33,16 @@ public record PatchVendorRequest(
     Status? Status);
 
 public record VendorInformation(string? Id, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
+public record GetVendorResponse(
+    string Id,
+    Status Status,
+    string ApplicationId,
+    VendorInformation VendorInformation,
+    Address VendorAddress,
+    PaymentInformation PaymentInformation,
+    ContactInformation ContactInformation,
+    IReadOnlyList<Metadata> Metadata,
+    DateTimeOffset CreatedAtUtc);
 
 public class VendorDocument
 {
@@ -44,5 +54,6 @@ public class VendorDocument
     public required PaymentInformation PaymentInformation { get; set; }
     public required ContactInformation ContactInformation { get; set; }
     public IReadOnlyList<Metadata> Metadata { get; set; } = [];
+    public required IReadOnlyList<VendorWebhookSubscription> Subscriptions { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
 }

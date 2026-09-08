@@ -75,6 +75,7 @@ app.MapGet("/weatherforecast", () =>
 app
     .MapCreatePaymentEndpoint()
     .MapVendorEndpoints()
+    .MapVendorSubscriptionEndpoints()
     .MapCreatePurchaseOrderLineItemEndpoint()
     ;
 
