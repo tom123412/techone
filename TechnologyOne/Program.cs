@@ -1,6 +1,7 @@
 using aspire.payment.TechnologyOne.Features.Vendors;
+using Microsoft.AspNetCore.Builder;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 builder.Services.Configure<VendorOptions>(
@@ -12,8 +13,18 @@ builder.Services.AddHttpClient("apiservice", client =>
     client.BaseAddress = new Uri("http://apiservice");
 });
 builder.Services.AddHostedService<VendorProcessIncomingCsvWorker>();
-builder.Services.AddHostedService<VendorReadyToExportWorker>();
+builder.Services.AddSingleton<VendorReadyToExportWorker>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<VendorReadyToExportWorker>());
 builder.Services.AddHostedService<VendorGenerateIncomingCsvWorker>();
 
-var host = builder.Build();
-host.Run();
+var app = builder.Build();
+
+app.MapPost("/api/vendors/events", async (VendorCreatedEventPayload vendorCreatedEvent, VendorReadyToExportWorker worker, CancellationToken cancellationToken) =>
+{
+    await worker.ProcessVendorCreatedEventAsync(vendorCreatedEvent, cancellationToken);
+    return Results.Accepted();
+});
+
+app.MapDefaultEndpoints();
+
+app.Run();

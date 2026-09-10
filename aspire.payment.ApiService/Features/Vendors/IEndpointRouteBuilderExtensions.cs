@@ -46,10 +46,26 @@ public static class IEndpointRouteBuilderExtensions
                 ;
 
             vendorGroup
-                .MapGet("/{id}", async Task<Results<Ok<VendorDocument>, NotFound>> (string id, IVendorStore store, CancellationToken cancellationToken) =>
+                .MapGet("/{id}", async Task<Results<Ok<GetVendorResponse>, NotFound>> (string id, IVendorStore store, CancellationToken cancellationToken) =>
                 {
                     var document = await store.GetAsync(id, cancellationToken);
-                    return document is null ? TypedResults.NotFound() : TypedResults.Ok(document);
+                    if (document is null)
+                    {
+                        return TypedResults.NotFound();
+                    }
+
+                    var response = new GetVendorResponse(
+                        document.Id,
+                        document.Status,
+                        document.ApplicationId,
+                        document.VendorInformation,
+                        document.VendorAddress,
+                        document.PaymentInformation,
+                        document.ContactInformation,
+                        document.Metadata,
+                        document.CreatedAtUtc);
+
+                    return TypedResults.Ok(response);
                 })
                 .WithName("GetVendor")
                 .MapToApiVersion(1, 0)

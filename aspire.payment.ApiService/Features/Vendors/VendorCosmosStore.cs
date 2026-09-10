@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 
 namespace aspire.payment.ApiService.Features.Vendors;
@@ -8,9 +9,13 @@ public interface IVendorStore
     Task<IQueryable<VendorDocument>> QueryAsync(CancellationToken cancellationToken);
     Task<VendorDocument?> GetAsync(string id, CancellationToken cancellationToken);
     Task<VendorDocument?> PatchAsync(string id, PatchVendorRequest request, CancellationToken cancellationToken);
+    Task<VendorWebhookSubscription> SubscribeAsync(CreateVendorSubscriptionRequest request, CancellationToken cancellationToken);
 }
 
-internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVendorStore
+internal sealed class VendorCosmosStore(
+    VendorsCosmosDbContext dbContext,
+    IHttpClientFactory httpClientFactory,
+    ILogger<VendorCosmosStore> logger) : IVendorStore
 {
     async Task<VendorDocument> IVendorStore.CreateAsync(CreateVendorRequest request, CancellationToken cancellationToken)
     {
@@ -25,6 +30,7 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
             PaymentInformation = request.PaymentInformation,
             ContactInformation = request.ContactInformation,
             Metadata = request.Metadata,
+            Subscriptions = [],
             Status = Status.ReadyForExport,
             CreatedAtUtc = DateTimeOffset.UtcNow,
         };
@@ -32,6 +38,7 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
         await dbContext.Database.EnsureCreatedAsync(cancellationToken);
         dbContext.Vendors.Add(document);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await PublishVendorCreatedEventAsync(document, cancellationToken);
 
         return document;
     }
@@ -93,5 +100,67 @@ internal sealed class VendorCosmosStore(VendorsCosmosDbContext dbContext) : IVen
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return document;
+    }
+
+    async Task<VendorWebhookSubscription> IVendorStore.SubscribeAsync(CreateVendorSubscriptionRequest request, CancellationToken cancellationToken)
+    {
+        await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+
+        var document = new VendorSubscriptionDocument
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            CallbackUrl = request.CallbackUrl,
+            CreatedAtUtc = DateTimeOffset.UtcNow,
+        };
+
+        dbContext.VendorSubscriptions.Add(document);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new VendorWebhookSubscription(document.Id, document.CallbackUrl, document.CreatedAtUtc);
+    }
+
+    private async Task PublishVendorCreatedEventAsync(VendorDocument document, CancellationToken cancellationToken)
+    {
+        var subscriptions = await dbContext.VendorSubscriptions
+            .AsNoTracking()
+            .Select(subscription => subscription.CallbackUrl)
+            .ToListAsync(cancellationToken);
+
+        if (subscriptions.Count == 0)
+        {
+            return;
+        }
+
+        var payload = new VendorCreatedEvent(
+            "vendor.created",
+            DateTimeOffset.UtcNow,
+            new GetVendorResponse(
+                document.Id,
+                document.Status,
+                document.ApplicationId,
+                document.VendorInformation,
+                document.VendorAddress,
+                document.PaymentInformation,
+                document.ContactInformation,
+                document.Metadata,
+                document.CreatedAtUtc));
+
+        using var client = httpClientFactory.CreateClient();
+
+        foreach (var callbackUrl in subscriptions)
+        {
+            try
+            {
+                using var response = await client.PostAsJsonAsync(callbackUrl, payload, cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    logger.LogWarning("Vendor created webhook callback failed for {CallbackUrl} with status code {StatusCode}", callbackUrl, response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Vendor created webhook callback failed for {CallbackUrl}", callbackUrl);
+            }
+        }
     }
 }

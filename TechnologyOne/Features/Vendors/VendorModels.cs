@@ -11,9 +11,13 @@ internal record VendorPayload(
     VendorAddressPayload VendorAddress,
     VendorContactInformationPayload ContactInformation,
     VendorPaymentInformationPayload PaymentInformation,
-    IReadOnlyList<VendorMetadataPayload> Metadata);
+    IReadOnlyList<VendorMetadataPayload> Metadata,
+    VendorStatus? Status);
 
-internal record VendorInformationPayload(string Status, string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
+internal record VendorCreatedEventPayload(string EventType, DateTimeOffset OccurredAtUtc, VendorPayload Vendor);
+internal record CreateVendorSubscriptionRequest(string CallbackUrl);
+
+internal record VendorInformationPayload(string LegalName, string? Abn, string OrganisationType, bool IsSmallMediumEnterprise, bool IsIndigenousSupplier);
 
 internal record VendorAddressPayload(string AddressLine1, string? AddressLine2, string? AddressLine3, string City, string State, string PostCode);
 

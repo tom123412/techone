@@ -13,6 +13,7 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpClient();
 
 builder.Services.AddDbContext<PaymentsCosmosDbContext>(options =>
     options.UseCosmosConnectionStringOrManagedIdentity(builder.Configuration.GetConnectionString("payments")
@@ -75,6 +76,7 @@ app.MapGet("/weatherforecast", () =>
 app
     .MapCreatePaymentEndpoint()
     .MapVendorEndpoints()
+    .MapVendorSubscriptionEndpoints()
     .MapCreatePurchaseOrderLineItemEndpoint()
     ;
 
