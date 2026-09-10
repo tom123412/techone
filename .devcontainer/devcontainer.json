@@ -77,7 +77,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "dotnet restore aspire.payment.slnx && dotnet tool install -g Microsoft.Tye --version '0.14.0-*' 2>/dev/null || true && dotnet tool update -g aspire-hosting-cli 2>/dev/null || true",
+  "postCreateCommand": "dotnet restore aspire.payment.slnx && dotnet tool install -g Microsoft.Tye --version '0.14.0-*' 2>/dev/null || true && dotnet tool update -g aspire-hosting-cli 2>/dev/null || true && (dotnet tool update -g Aspire.Cli 2>/dev/null || dotnet tool install -g Aspire.Cli)",
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
