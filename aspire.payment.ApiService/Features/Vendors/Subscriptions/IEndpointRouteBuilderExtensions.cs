@@ -16,7 +16,7 @@ internal static class VendorSubscriptionEndpointRouteBuilderExtensions
                 ;
 
             var vendorGroup = app
-                .MapGroup("/api/vendorsxx/subscriptions")
+                .MapGroup("/api/vendors/subscriptions")
                 .WithApiVersionSet(apiVersionSet)
                 ;
 
