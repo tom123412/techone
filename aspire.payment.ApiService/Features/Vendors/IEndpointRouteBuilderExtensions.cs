@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.OData.Query;
 
 namespace aspire.payment.ApiService.Features.Vendors;
 
-public static class IEndpointRouteBuilderExtensions
+internal static class IEndpointRouteBuilderExtensions
 {
     extension(IEndpointRouteBuilder app)
     {

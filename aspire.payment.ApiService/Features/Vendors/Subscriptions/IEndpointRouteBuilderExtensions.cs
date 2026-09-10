@@ -5,38 +5,41 @@ namespace aspire.payment.ApiService.Features.Vendors;
 
 internal static class VendorSubscriptionEndpointRouteBuilderExtensions
 {
-    public static RouteGroupBuilder MapVendorSubscriptionEndpoints(this IEndpointRouteBuilder app)
+    extension(IEndpointRouteBuilder app)
     {
-        var apiVersionSet = app.NewApiVersionSet()
-            .HasApiVersion(new ApiVersion(1, 0))
-            .ReportApiVersions()
-            .Build()
-            ;
+        public IEndpointRouteBuilder MapVendorSubscriptionEndpoints()
+        {
+            var apiVersionSet = app.NewApiVersionSet()
+                .HasApiVersion(new ApiVersion(1, 0))
+                .ReportApiVersions()
+                .Build()
+                ;
 
-        var vendorGroup = app
-            .MapGroup("/api/vendors")
-            .WithApiVersionSet(apiVersionSet)
-            ;
+            var vendorGroup = app
+                .MapGroup("/api/vendorsxx/subscriptions")
+                .WithApiVersionSet(apiVersionSet)
+                ;
 
-        vendorGroup
-            .MapPost("/subscriptions", async Task<Results<Created<VendorWebhookSubscription>, ValidationProblem>> (CreateVendorSubscriptionRequest request, IVendorStore store, CancellationToken cancellationToken) =>
-            {
-                if (!Uri.TryCreate(request.CallbackUrl, UriKind.Absolute, out var callbackUri) ||
-                    (callbackUri.Scheme != Uri.UriSchemeHttp && callbackUri.Scheme != Uri.UriSchemeHttps))
+            vendorGroup
+                .MapPost("/", async Task<Results<Created<VendorWebhookSubscription>, ValidationProblem>> (CreateVendorSubscriptionRequest request, IVendorStore store, CancellationToken cancellationToken) =>
                 {
-                    return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+                    if (!Uri.TryCreate(request.CallbackUrl, UriKind.Absolute, out var callbackUri) ||
+                        (callbackUri.Scheme != Uri.UriSchemeHttp && callbackUri.Scheme != Uri.UriSchemeHttps))
                     {
-                        [nameof(request.CallbackUrl)] = ["CallbackUrl must be an absolute HTTP or HTTPS URL."]
-                    });
-                }
+                        return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+                        {
+                            [nameof(request.CallbackUrl)] = ["CallbackUrl must be an absolute HTTP or HTTPS URL."]
+                        });
+                    }
 
-                var subscription = await store.SubscribeAsync(request, cancellationToken);
-                return TypedResults.Created($"/api/vendors/subscriptions/{subscription.Id}", subscription);
-            })
-            .WithName("SubscribeVendors")
-            .MapToApiVersion(1, 0)
-            ;
+                    var subscription = await store.SubscribeAsync(request, cancellationToken);
+                    return TypedResults.Created($"/api/vendors/subscriptions/{subscription.Id}", subscription);
+                })
+                .WithName("SubscribeVendors")
+                .MapToApiVersion(1, 0)
+                ;
 
-        return vendorGroup;
+            return app;
+        }
     }
 }
