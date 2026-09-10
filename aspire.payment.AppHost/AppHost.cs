@@ -1,3 +1,4 @@
+using Aspire.Hosting.Azure;
 using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -24,11 +25,11 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    cosmosAccount = builder.AddAzureCosmosDB("cosmos-account");
-    var cosmosDb = (cosmosAccount as IResourceBuilder<AzureCosmosDBResource>)!.AddCosmosDatabase("cosmos-db");
-    var payments = cosmosDb.AddContainer("payments", "/id");
-    var vendors = cosmosDb.AddContainer("vendors", "/id");
-    var purchaseOrderLineItems = cosmosDb.AddContainer("purchase-order-line-items", "/id");
+    cosmosAccount = builder.AddAzureCosmosDB("cosmos-account").AddCosmosDatabase("cosmos-db");
+    var cosmosDb = (cosmosAccount as IResourceBuilder<AzureCosmosDBDatabaseResource>);
+    var payments = cosmosDb!.AddContainer("payments", "/id");
+    var vendors = cosmosDb!.AddContainer("vendors", "/id");
+    var purchaseOrderLineItems = cosmosDb!.AddContainer("purchase-order-line-items", "/id");
 
 }
 
